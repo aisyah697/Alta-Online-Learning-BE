@@ -17,6 +17,7 @@ class config:
     SQLALCHEMY_TRACK_MODIFICATION = False
     JWT_SECRET_KEY = cfg["jwt"]["secret_key"]
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
+    UPLOAD_MEDIA_AVATAR = "/storage/media/avatar"
 
 class DevelopmentConfig(config):
     APP_DEBUG = True
