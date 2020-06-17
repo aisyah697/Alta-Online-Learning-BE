@@ -8,3 +8,4 @@ flask-jwt-extended
 pytest
 werkzeug==0.16.0
 flask_cors
+firebase
