@@ -13,6 +13,7 @@ from flask_jwt_extended import (
     jwt_required,
     get_jwt_claims,
 )
+import re
 
 from .model import Admins
 
@@ -51,7 +52,12 @@ class AdminsResource(Resource):
         parser.add_argument("description", location="form")
         parser.add_argument("status", location="form", default="True")
         args = parser.parse_args()
-        
+
+        #cek phone number
+        phone = re.findall("^0[0-9]{7,14}", args["phone"])
+        if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
+            return {"status": "phone number not match"}, 404
+
         #for status, status used to soft delete 
         if args["status"] == "True" or args["status"] == "true":
             args["status"] = True
@@ -125,6 +131,8 @@ class AdminsResource(Resource):
                 args["status"] = False
             
             qry_admin.status = args['status']
+        else:
+            return {"status": "NOT FILLED"}, 404
 
         db.session.commit()
 
@@ -172,7 +180,11 @@ class AdminsResource(Resource):
             qry_admin.address = args['address']
 
         if args['phone'] is not None:
-            qry_admin.phone = args['phone']
+            #cek phone number
+            phone = re.findall("^0[0-9]{7,14}", args["phone"])
+            if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
+                return {"status": "phone number not match"}, 404
+            qry_mentee.phone = args['phone']
 
         if args['place_birth'] is not None:
             qry_admin.place_birth = args['place_birth']
