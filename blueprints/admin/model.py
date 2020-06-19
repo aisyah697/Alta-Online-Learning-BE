@@ -4,6 +4,7 @@ from sqlalchemy import func
 from sqlalchemy.sql.expression import text
 from datetime import datetime
 
+from sqlalchemy.orm import relationship
 from sqlalchemy import Table, Column, Integer
 
 class Admins(db.Model):
@@ -25,8 +26,8 @@ class Admins(db.Model):
     status = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
+    questions_altatest = db.relationship("QuestionsAltatest", cascade="all, delete-orphan", passive_deletes=True)
     # modul = db.relationship("Moduls", cascade="all, delete-orphan", passive_deletes=True)
-    # question_altatest = db.relationship("QuestionAltatests", cascade="all, delete-orphan", passive_deletes=True)
 
     response_fields = {
         "id": fields.Integer,
