@@ -13,6 +13,7 @@ from flask_jwt_extended import (
     jwt_required,
     get_jwt_claims,
 )
+import re
 
 from .model import Mentees
 
@@ -51,6 +52,11 @@ class MenteesResource(Resource):
         parser.add_argument("description", location="form")
         parser.add_argument("status", location="form", default="True")
         args = parser.parse_args()
+
+        #cek phone number
+        phone = re.findall("^0[0-9]{7,14}", args["phone"])
+        if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
+            return {"status": "phone number not match"}, 404
         
         #for status, status used to soft delete 
         if args["status"] == "True" or args["status"] == "true":
@@ -123,6 +129,8 @@ class MenteesResource(Resource):
                 args["status"] = True
             elif args["status"] == "False" or args["status"] == "false":
                 args["status"] = False
+        else:
+            return {"status": "NOT FILLED"}, 404
             
             qry_mentee.status = args['status']
 
@@ -169,6 +177,10 @@ class MenteesResource(Resource):
             qry_mentee.address = args['address']
 
         if args['phone'] is not None:
+            #cek phone number
+            phone = re.findall("^0[0-9]{7,14}", args["phone"])
+            if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
+                return {"status": "phone number not match"}, 404
             qry_mentee.phone = args['phone']
 
         if args['place_birth'] is not None:
