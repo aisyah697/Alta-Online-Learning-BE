@@ -4,6 +4,8 @@ from sqlalchemy import func
 from sqlalchemy.sql.expression import text
 from datetime import datetime
 
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy import Table, Column, Integer
 
 class Mentees(db.Model):
@@ -41,7 +43,7 @@ class Mentees(db.Model):
         "background_education": fields.String,
         "github": fields.String,
         "description": fields.String,
-        "status": fields.String,
+        "status": fields.Boolean,
         "created_at": fields.DateTime,
         "update_at": fields.DateTime
     }
