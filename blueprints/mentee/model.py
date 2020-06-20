@@ -4,7 +4,6 @@ from sqlalchemy import func
 from sqlalchemy.sql.expression import text
 from datetime import datetime
 
-from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy import Table, Column, Integer
 
@@ -27,7 +26,7 @@ class Mentees(db.Model):
     status = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
-    # altatest_history = db.relationship("AltatestHistories", cascade="all, delete-orphan", passive_deletes=True)
+    altatest_history = db.relationship("HistoriesAltatest", cascade="all, delete-orphan", passive_deletes=True)
     # module_history = db.relationship("ModuleHistories", cascade="all, delete-orphan", passive_deletes=True)
 
     response_fields = {

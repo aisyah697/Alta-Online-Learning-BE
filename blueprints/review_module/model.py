@@ -7,14 +7,15 @@ from datetime import datetime
 from sqlalchemy import ForeignKey
 from sqlalchemy import Table, Column, Integer
 
-from blueprints.altatest.model import Altatests
 from blueprints.mentee.model import Mentees
+from blueprints.module.model import Modules
 
-class HistoriesAltatest(db.Model):
-    __tablename__ = "histories_altatest"
+class ReviewsModule(db.Model):
+    __tablename__ = "reviews_module"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    altatest_id = db.Column(db.Integer, db.ForeignKey(Altatests.id, ondelete="CASCADE"), nullable=True)
-    mentee_id = db.Column(db.Integer, db.ForeignKey(Mentees.id, ondelete="CASCADE"), nullable=True)
+    mentee_id = db.Column(db.Integer, db.ForeignKey(Mentees.id, ondelete="CASCADE"), nullable=False)
+    module_id = db.Column(db.Integer, db.ForeignKey(Modules.id, ondelete="CASCADE"), nullable=False)
+    content = db.Column(db.Text)
     score = db.Column(db.Integer)
     status = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
@@ -22,17 +23,19 @@ class HistoriesAltatest(db.Model):
 
     response_fields = {
         "id": fields.Integer,
-        "altatest_id": fields.Integer,
         "mentee_id": fields.Integer,
+        "module_id": fields.Integer,
+        "content": fields.String,
         "score": fields.Integer,
         "status": fields.Boolean,
         "created_at": fields.DateTime,
-        "updated_at": fields.DateTime
+        "update_at": fields.DateTime
     }
 
-    def __init__ (self, altatest_id, mentee_id, score, status):
-        self.altatest_id = altatest_id
+    def __init__ (self, mentee_id, module_id, content, score, status):
         self.mentee_id = mentee_id
+        self.module_id = module_id
+        self.content = content
         self.score = score
         self.status = status
 
