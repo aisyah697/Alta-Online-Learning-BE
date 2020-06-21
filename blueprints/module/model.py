@@ -24,7 +24,7 @@ class Modules(db.Model):
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
     review_module = db.relationship("ReviewsModule", cascade="all, delete-orphan", passive_deletes=True)
     requirement_module = db.relationship("RequirementsModule", cascade="all, delete-orphan", passive_deletes=True)
-    # subject = db.relationship("ReviewsModule", cascade="all, delete-orphan", passive_deletes=True)
+    subject = db.relationship("Subjects", cascade="all, delete-orphan", passive_deletes=True)
     # module_history = db.relationship("ModuleHistories", cascade="all, delete-orphan", passive_deletes=True)
 
     response_fields = {
