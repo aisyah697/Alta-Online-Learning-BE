@@ -95,7 +95,7 @@ class PhasesResource(Resource):
 
         return marshal(qry_phase, Phases.response_fields), 200
 
-    #Endpoint delete history Altatest by Id
+    #Endpoint delete phase by Id
     def delete(self, id):
         qry_phase = Phases.query.get(id)
 

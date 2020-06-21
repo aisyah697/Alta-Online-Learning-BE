@@ -131,17 +131,17 @@ class ModulesResource(Resource):
             qry_module.description = args['description']
 
         if args['image'] is not None:
-            #Check avatar in querry
+            #Check image in query
             if qry_module.image is not None:
                 filename = qry_module.image
 
-                #Remove avatar in storage
+                #Remove image in storage
                 UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
                 os.remove(os.path.join("."+UPLOAD_FOLDER, filename))
 
                 module_image = args["image"]
                 
-                #Change avatar in storage
+                #Change image in storage
                 if module_image:
                     randomstr = uuid.uuid4().hex
                     filename = randomstr+"_"+module_image.filename
@@ -152,9 +152,9 @@ class ModulesResource(Resource):
             else:
                 UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
 
-                module_image = args["avatar"]
+                module_image = args["image"]
                 
-                #Change avatar in storage
+                #Change image in storage
                 if module_image:
                     randomstr = uuid.uuid4().hex
                     filename = randomstr+"_"+module_image.filename
