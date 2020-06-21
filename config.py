@@ -18,6 +18,8 @@ class config:
     JWT_SECRET_KEY = cfg["jwt"]["secret_key"]
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
     UPLOAD_MEDIA_AVATAR = "/storage/media/avatar"
+    UPLOAD_MEDIA_VIDEO = "/storage/media/video"
+    UPLOAD_MEDIA_PRESENTATION = "/storage/media/presentation"
 
 class DevelopmentConfig(config):
     APP_DEBUG = True
