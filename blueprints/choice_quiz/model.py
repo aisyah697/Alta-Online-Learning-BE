@@ -5,34 +5,35 @@ from sqlalchemy.sql.expression import text
 from datetime import datetime
 
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship
 from sqlalchemy import Table, Column, Integer
 
-from blueprints.admin.model import Admins
+from blueprints.question_quiz.model import QuestionsQuiz
 
 
-class QuestionsAltatest(db.Model):
-    __tablename__ = "questions_altatest"
+class ChoicesQuiz(db.Model):
+    __tablename__ = "choices_quiz"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    admin_id = db.Column(db.Integer, db.ForeignKey(Admins.id, ondelete="CASCADE"), nullable=False)
-    question = db.Column(db.Text, nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey(QuestionsQuiz.id, ondelete="CASCADE"), nullable=False)
+    choice = db.Column(db.Text, nullable=False)
+    is_correct = db.Column(db.Boolean)
     status = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
-    choice_altatest = db.relationship("ChoicesAltatest", cascade="all, delete-orphan", passive_deletes=True)
 
     response_fields = {
         "id": fields.Integer,
-        "admin_id": fields.Integer,
-        "question": fields.String,
+        "question_id": fields.Integer,
+        "choice": fields.String,
+        "is_correct": fields.Boolean,
         "status": fields.Boolean,
         "created_at": fields.DateTime,
         "update_at": fields.DateTime,
     }
 
-    def __init__(self, admin_id, question, status):
-        self.admin_id = admin_id
-        self.question = question
+    def __init__(self, question_id, choice, is_correct, status):
+        self.question_id =  question_id
+        self.choice = choice
+        self.is_correct = is_correct
         self.status = status
 
     def __rpr__(self):
