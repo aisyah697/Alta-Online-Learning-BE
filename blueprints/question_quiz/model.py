@@ -8,32 +8,32 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy import Table, Column, Integer
 
-from blueprints.subject.model import Subjects
+from blueprints.quiz.model import Quizs
 
-class Exams(db.Model):
-    __tablename__ = "exams"
+
+class QuestionsQuiz(db.Model):
+    __tablename__ = "questions_quiz"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    subject_id = db.Column(db.Integer, db.ForeignKey(Subjects.id, ondelete="CASCADE"), nullable=False)
-    type_exam = db.Column(db.String(250), nullable=False)
+    quiz_id = db.Column(db.Integer, db.ForeignKey(Quizs.id, ondelete="CASCADE"), nullable=False)
+    question = db.Column(db.Text, nullable=False)
     status = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
-    livecode = db.relationship("Livecodes", cascade="all, delete-orphan", passive_deletes=True)
-    quiz = db.relationship("Quizs", cascade="all, delete-orphan", passive_deletes=True)
+    choice_quiz = db.relationship("ChoicesQuiz", cascade="all, delete-orphan", passive_deletes=True)
 
     response_fields = {
         "id": fields.Integer,
-        "subject_id": fields.Integer,
-        "type_exam": fields.String,
+        "quiz_id": fields.Integer,
+        "question": fields.String,
         "status": fields.Boolean,
         "created_at": fields.DateTime,
-        "update_at": fields.DateTime
+        "update_at": fields.DateTime,
     }
 
-    def __init__ (self, subject_id, type_exam, status):
-        self.subject_id = subject_id
-        self.type_exam = type_exam
+    def __init__(self, quiz_id, question, status):
+        self.quiz_id = quiz_id
+        self.question = question
         self.status = status
 
     def __rpr__(self):
-        return "<Users %r>" % self.id
+        return "<Questions %r>" % self.id

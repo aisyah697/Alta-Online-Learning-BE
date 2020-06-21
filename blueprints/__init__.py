@@ -116,6 +116,10 @@ from blueprints.requirement_module.resources import bp_requirement_module
 from blueprints.subject.resources import bp_subject
 from blueprints.file_subject.resources import bp_file_subject
 from blueprints.exam.resources import bp_exam
+from blueprints.livecode.resources import bp_livecode
+from blueprints.quiz.resources import bp_quiz
+from blueprints.question_quiz.resources import bp_question_quiz
+from blueprints.choice_quiz.resources import bp_choice_quiz
 
 app.register_blueprint(bp_admin, url_prefix="/admin")
 app.register_blueprint(bp_mentee, url_prefix="/mentee")
@@ -131,5 +135,9 @@ app.register_blueprint(bp_requirement_module, url_prefix="/requirementmodule")
 app.register_blueprint(bp_subject, url_prefix="/subject")
 app.register_blueprint(bp_file_subject, url_prefix="/filesubject")
 app.register_blueprint(bp_exam, url_prefix="/exam")
+app.register_blueprint(bp_livecode, url_prefix="/livecode")
+app.register_blueprint(bp_quiz, url_prefix="/quiz")
+app.register_blueprint(bp_question_quiz, url_prefix="/questionquiz")
+app.register_blueprint(bp_choice_quiz, url_prefix="/choicequiz")
 
 db.create_all()

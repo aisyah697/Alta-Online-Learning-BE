@@ -27,7 +27,7 @@ class Admins(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
     questions_altatest = db.relationship("QuestionsAltatest", cascade="all, delete-orphan", passive_deletes=True)
-    # modul = db.relationship("Moduls", cascade="all, delete-orphan", passive_deletes=True)
+    module = db.relationship("Modules", cascade="all, delete-orphan", passive_deletes=True)
 
     response_fields = {
         "id": fields.Integer,
