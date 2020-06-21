@@ -301,5 +301,5 @@ class MenteesAllStatus(Resource):
         return rows, 200
 
 api.add_resource(MenteesAll, "")
-api.add_resource(MenteesResource, "", "/<id>")
+api.add_resource(MenteesResource, "", "/<:id>")
 api.add_resource(MenteesAllStatus, "", "/all")
