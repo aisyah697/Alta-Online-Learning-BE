@@ -5,34 +5,38 @@ from sqlalchemy.sql.expression import text
 from datetime import datetime
 
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship
 from sqlalchemy import Table, Column, Integer
 
-from blueprints.admin.model import Admins
+from blueprints.exam.model import Exams
 
 
-class QuestionsAltatest(db.Model):
-    __tablename__ = "questions_altatest"
+class Livecodes(db.Model):
+    __tablename__ = "livecodes"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    admin_id = db.Column(db.Integer, db.ForeignKey(Admins.id, ondelete="CASCADE"), nullable=False)
-    question = db.Column(db.Text, nullable=False)
+    exam_id = db.Column(db.Integer, db.ForeignKey(Exams.id, ondelete="CASCADE"), nullable=False)
+    name = db.Column(db.String(250))
+    description = db.Column(db.Text)
+    link = db.Column(db.String(250))
     status = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
-    choice_altatest = db.relationship("ChoicesAltatest", cascade="all, delete-orphan", passive_deletes=True)
 
     response_fields = {
         "id": fields.Integer,
-        "admin_id": fields.Integer,
-        "question": fields.String,
+        "exam_id": fields.Integer,
+        "name": fields.String,
+        "description": fields.String,
+        "link": fields.String,
         "status": fields.Boolean,
         "created_at": fields.DateTime,
         "update_at": fields.DateTime,
     }
 
-    def __init__(self, admin_id, question, status):
-        self.admin_id = admin_id
-        self.question = question
+    def __init__(self, exam_id, name, description, link, status):
+        self.exam_id = exam_id
+        self.name = name
+        self.description = description
+        self.link = link
         self.status = status
 
     def __rpr__(self):
