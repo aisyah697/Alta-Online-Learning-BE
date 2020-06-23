@@ -16,7 +16,7 @@ from sqlalchemy import desc
 
 from .model import Exams
 
-bp_exam = Blueprint("ecam", __name__)
+bp_exam = Blueprint("exam", __name__)
 api = Api(bp_exam)
 
 
