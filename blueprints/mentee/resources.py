@@ -54,9 +54,12 @@ class MenteesResource(Resource):
         args = parser.parse_args()
 
         #cek phone number
-        phone = re.findall("^0[0-9]{7,14}", args["phone"])
-        if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
-            return {"status": "phone number not match"}, 404
+        if args["phone"] is not None:
+            phone = re.findall("^0[0-9]{7,14}", args["phone"])
+            if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
+                return {"status": "phone number not match"}, 404
+        else:
+            pass
         
         #for status, status used to soft delete 
         if args["status"] == "True" or args["status"] == "true":
@@ -301,5 +304,5 @@ class MenteesAllStatus(Resource):
         return rows, 200
 
 api.add_resource(MenteesAll, "")
-api.add_resource(MenteesResource, "", "/<:id>")
+api.add_resource(MenteesResource, "", "/<id>")
 api.add_resource(MenteesAllStatus, "", "/all")
