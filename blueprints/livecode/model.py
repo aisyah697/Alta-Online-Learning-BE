@@ -5,39 +5,39 @@ from sqlalchemy.sql.expression import text
 from datetime import datetime
 
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship
 from sqlalchemy import Table, Column, Integer
 
-from blueprints.module.model import Modules
+from blueprints.exam.model import Exams
 
-class Subjects(db.Model):
-    __tablename__ = "subjects"
+
+class Livecodes(db.Model):
+    __tablename__ = "livecodes"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    module_id = db.Column(db.Integer, db.ForeignKey(Modules.id, ondelete="CASCADE"), nullable=False)
-    name = db.Column(db.String(250), nullable=False, unique=True)
+    exam_id = db.Column(db.Integer, db.ForeignKey(Exams.id, ondelete="CASCADE"), nullable=False)
+    name = db.Column(db.String(250))
     description = db.Column(db.Text)
+    link = db.Column(db.String(250))
     status = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
-    file_subject = db.relationship("FilesSubject", cascade="all, delete-orphan", passive_deletes=True)
-    exam = db.relationship("Exams", cascade="all, delete-orphan", passive_deletes=True)
-    history_subject = db.relationship("HistoriesSubject", cascade="all, delete-orphan", passive_deletes=True)
 
     response_fields = {
         "id": fields.Integer,
-        "module_id": fields.Integer,
+        "exam_id": fields.Integer,
         "name": fields.String,
         "description": fields.String,
+        "link": fields.String,
         "status": fields.Boolean,
         "created_at": fields.DateTime,
-        "update_at": fields.DateTime
+        "update_at": fields.DateTime,
     }
 
-    def __init__ (self, module_id, name, description, status):
-        self.module_id = module_id
+    def __init__(self, exam_id, name, description, link, status):
+        self.exam_id = exam_id
         self.name = name
         self.description = description
+        self.link = link
         self.status = status
 
     def __rpr__(self):
-        return "<Users %r>" % self.id
+        return "<Questions %r>" % self.id

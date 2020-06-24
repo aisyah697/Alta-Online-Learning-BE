@@ -53,6 +53,7 @@ class MenteesResource(Resource):
         parser.add_argument("status", location="form", default="True")
         args = parser.parse_args()
 
+<<<<<<< HEAD
         #cek phone number
         if args["phone"] is not None:
             phone = re.findall("^0[0-9]{7,14}", args["phone"])
@@ -61,6 +62,26 @@ class MenteesResource(Resource):
         else:
             pass
         
+=======
+        #check username
+        if len(args["username"]) < 6:
+            return {"status": "username must be at least 6 character"}, 404
+
+        #check phone number
+        phone = re.findall("^0[0-9]{7,14}", args["phone"])
+        if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
+            return {"status": "phone number not match"}, 404
+
+        #check password
+        if len(args["password"]) < 6:
+            return {"status": "password must be at least 6 character"}, 404
+
+        #check email
+        match=re.search("^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", args["email"])
+        if match is None:
+             return {"status": "your input of email is wrong"}, 404
+
+>>>>>>> 6c67ea040b88eaebc91a3012d857172754c4462a
         #for status, status used to soft delete 
         if args["status"] == "True" or args["status"] == "true":
             args["status"] = True
@@ -163,9 +184,15 @@ class MenteesResource(Resource):
         args = parser.parse_args()
 
         if args['username'] is not None:
+            #check username
+            if len(args["username"]) < 6:
+                return {"status": "username must be at least 6 character"}, 404
             qry_mentee.username = args['username']
 
         if args['password'] is not None:
+            #cek password
+            if len(args["password"]) < 6:
+                return {"status": "password must be 6 character"}, 404
             encoded = ("%s%s" % (args["password"], qry_mentee.salt)).encode("utf-8")
             hash_pass = hashlib.sha512(encoded).hexdigest()
             qry_mentee.password = hash_pass
@@ -174,6 +201,10 @@ class MenteesResource(Resource):
             qry_mentee.full_name = args['full_name']
 
         if args['email'] is not None:
+            #check email
+            match=re.search("^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", args["email"])
+            if match is None:
+                return {"status": "your input of email is wrong"}, 404
             qry_mentee.email = args['email']
 
         if args['address'] is not None:
