@@ -5,38 +5,38 @@ from sqlalchemy.sql.expression import text
 from datetime import datetime
 
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship
 from sqlalchemy import Table, Column, Integer
 
 from blueprints.module.model import Modules
+from blueprints.mentee.model import Mentees
 
-class Subjects(db.Model):
-    __tablename__ = "subjects"
+class HistoriesModule(db.Model):
+    __tablename__ = "histories_module"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     module_id = db.Column(db.Integer, db.ForeignKey(Modules.id, ondelete="CASCADE"), nullable=False)
-    name = db.Column(db.String(250), nullable=False, unique=True)
-    description = db.Column(db.Text)
+    mentee_id = db.Column(db.Integer, db.ForeignKey(Mentees.id, ondelete="CASCADE"), nullable=False)
+    score = db.Column(db.Integer)
+    is_complete = db.Column(db.Boolean)
     status = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
-    file_subject = db.relationship("FilesSubject", cascade="all, delete-orphan", passive_deletes=True)
-    exam = db.relationship("Exams", cascade="all, delete-orphan", passive_deletes=True)
-    history_subject = db.relationship("HistoriesSubject", cascade="all, delete-orphan", passive_deletes=True)
 
     response_fields = {
         "id": fields.Integer,
         "module_id": fields.Integer,
-        "name": fields.String,
-        "description": fields.String,
+        "mentee_id": fields.Integer,
+        "score": fields.Integer,
+        "is_complete": fields.Boolean,
         "status": fields.Boolean,
         "created_at": fields.DateTime,
         "update_at": fields.DateTime
     }
 
-    def __init__ (self, module_id, name, description, status):
+    def __init__ (self, module_id, mentee_id, score, is_complete, status):
         self.module_id = module_id
-        self.name = name
-        self.description = description
+        self.mentee_id = mentee_id
+        self.score = score
+        self.is_complete = is_complete
         self.status = status
 
     def __rpr__(self):

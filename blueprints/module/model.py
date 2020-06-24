@@ -25,7 +25,7 @@ class Modules(db.Model):
     review_module = db.relationship("ReviewsModule", cascade="all, delete-orphan", passive_deletes=True)
     requirement_module = db.relationship("RequirementsModule", cascade="all, delete-orphan", passive_deletes=True)
     subject = db.relationship("Subjects", cascade="all, delete-orphan", passive_deletes=True)
-    # module_history = db.relationship("ModuleHistories", cascade="all, delete-orphan", passive_deletes=True)
+    history_module = db.relationship("HistoriesModule", cascade="all, delete-orphan", passive_deletes=True)
 
     response_fields = {
         "id": fields.Integer,
