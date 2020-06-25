@@ -44,6 +44,7 @@ class AuthAdmin(Resource):
             if hash_pass == qry_admin.password:
                 obj_username = marshal(qry_admin, Admins.response_fields)
                 jwt_username = marshal(qry_admin, Admins.jwt_claims_fields)
+                jwt_username["status"] = "admin"
                 token = create_access_token(
                     identity=args["username"], user_claims=jwt_username
                 )
@@ -81,6 +82,7 @@ class AuthMentee(Resource):
             if hash_pass == qry_mentee.password:
                 obj_username = marshal(qry_mentee, Mentees.response_fields)
                 jwt_username = marshal(qry_mentee, Mentees.jwt_claims_fields)
+                jwt_username["status"] = "mentee"
                 token = create_access_token(
                     identity=args["username"], user_claims=jwt_username
                 )

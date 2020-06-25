@@ -13,6 +13,7 @@ from flask_jwt_extended import (
     jwt_required,
     get_jwt_claims,
 )
+import boto3
 import re
 
 from .model import Mentees
@@ -78,14 +79,26 @@ class MenteesResource(Resource):
             args["status"] = False
 
         #for upload image in storage
-        UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
+        avatar = args["avatar"]
 
-        mentee_avatar = args["avatar"]
-
-        if mentee_avatar:
+        if avatar:
             randomstr = uuid.uuid4().hex
-            filename = randomstr+"_"+mentee_avatar.filename
-            mentee_avatar.save(os.path.join("."+UPLOAD_FOLDER, filename))
+            filename_key = randomstr + "_" + avatar.filename
+            filename_body = avatar
+
+            # S3 Connect
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+            )
+
+            # Image Uploaded
+            s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="avatar/"+filename_key, Body=filename_body, ACL='public-read')
+
+            filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
+            filename = filename.replace(" ", "+")
+        
         else:
             filename = None
 
@@ -116,6 +129,7 @@ class MenteesResource(Resource):
 
         #for get token when register
         jwt_username = marshal(result, Mentees.jwt_claims_fields)
+        jwt_username["status"] = "mentee"
         token = create_access_token(identity=args["username"], user_claims=jwt_username)
 
         #add key token in response of endpoint
@@ -213,34 +227,63 @@ class MenteesResource(Resource):
             qry_mentee.date_birth = args['date_birth']
 
         if args['avatar'] is not None:
-            #Check avatar in querry
+            #Check avatar in query
             if qry_mentee.avatar is not None:
                 filename = qry_mentee.avatar
+                #remove avatar in storage
+                filename = "avatar/"+filename.split("/")[-1]
+                filename = filename.replace("+", " ")
 
-                #Remove avatar in storage
-                UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
-                os.remove(os.path.join("." + UPLOAD_FOLDER, filename))
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
 
-                mentee_avatar = args["avatar"]
+                s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
+ 
+                # #change avatar in storage
+                avatar = args["avatar"]
 
-                #Change avatar in storage
-                if mentee_avatar:
-                    randomstr = uuid.uuid4().hex #get random string to image filename
-                    filename = randomstr+"_"+mentee_avatar.filename
-                    mentee_avatar.save(os.path.join("."+UPLOAD_FOLDER, filename))
+                randomstr = uuid.uuid4().hex
+                filename_key = randomstr + "_" + avatar.filename
+                filename_body = avatar
+
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
+
+                # Image Uploaded
+                s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="avatar/"+filename_key, Body=filename_body, ACL='public-read')
+
+                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
+                filename = filename.replace(" ", "+")
 
                 qry_mentee.avatar = filename
-            
+
             else:
-                UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
+                avatar = args["avatar"]
 
-                mentee_avatar = args["avatar"]
+                randomstr = uuid.uuid4().hex
+                filename_key = randomstr + "_" + avatar.filename
+                filename_body = avatar
 
-                #Change avatar in storage
-                if mentee_avatar:
-                    randomstr = uuid.uuid4().hex #get random string to image filename
-                    filename = randomstr+"_"+mentee_avatar.filename
-                    mentee_avatar.save(os.path.join("."+UPLOAD_FOLDER, filename))
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
+
+                # Image Uploaded
+                s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="avatar/"+filename_key, Body=filename_body, ACL='public-read')
+
+                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
+                filename = filename.replace(" ", "+")
 
                 qry_mentee.avatar = filename
 
@@ -263,9 +306,21 @@ class MenteesResource(Resource):
         filename = mentee.avatar
         
         if mentee is not None:
-            UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
-            os.remove(os.path.join("." + UPLOAD_FOLDER, filename))
+            if filename is not None:
+                #remove avatar in storage
+                filename = "avatar/"+filename.split("/")[-1]
+                filename = filename.replace("+", " ")
 
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
+
+                s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
+            
+            #remove database
             db.session.delete(mentee)
             db.session.commit()
             return {"status": "DELETED SUCCESS"}, 200
