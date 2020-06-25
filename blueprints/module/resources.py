@@ -13,6 +13,7 @@ import hashlib, uuid
 #     jwt_required,
 #     get_jwt_claims,
 # )
+import boto3
 
 from .model import Modules
 
@@ -52,14 +53,26 @@ class ModulesResource(Resource):
             args["status"] = False
 
         #for upload image in storage
-        UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
-
         module_image = args["image"]
 
         if module_image:
             randomstr = uuid.uuid4().hex
-            filename = randomstr+"_"+module_image.filename
-            module_image.save(os.path.join("."+UPLOAD_FOLDER, filename))
+            filename_key = randomstr + "_" + module_image.filename
+            filename_body = module_image
+
+            # S3 Connect
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+            )
+
+            # Image Uploaded
+            s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="image/"+filename_key, Body=filename_body, ACL='public-read')
+
+            filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/image/" + str(filename_key)
+            filename = filename.replace(" ", "+")
+        
         else:
             filename = None
 
@@ -134,31 +147,60 @@ class ModulesResource(Resource):
             #Check image in query
             if qry_module.image is not None:
                 filename = qry_module.image
+                #remove image in storage
+                filename = "image/"+filename.split("/")[-1]
+                filename = filename.replace("+", " ")
 
-                #Remove image in storage
-                UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
-                os.remove(os.path.join("."+UPLOAD_FOLDER, filename))
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
 
-                module_image = args["image"]
-                
-                #Change image in storage
-                if module_image:
-                    randomstr = uuid.uuid4().hex
-                    filename = randomstr+"_"+module_image.filename
-                    module_image.save(os.path.join("."+UPLOAD_FOLDER, filename))
+                s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
+ 
+                # #change image in storage
+                image = args["image"]
+
+                randomstr = uuid.uuid4().hex
+                filename_key = randomstr + "_" + image.filename
+                filename_body = image
+
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
+
+                # Image Uploaded
+                s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="image/"+filename_key, Body=filename_body, ACL='public-read')
+
+                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/image/" + str(filename_key)
+                filename = filename.replace(" ", "+")
 
                 qry_module.image = filename
 
             else:
-                UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
+                image = args["image"]
 
-                module_image = args["image"]
-                
-                #Change image in storage
-                if module_image:
-                    randomstr = uuid.uuid4().hex
-                    filename = randomstr+"_"+module_image.filename
-                    module_image.save(os.path.join("."+UPLOAD_FOLDER, filename))
+                randomstr = uuid.uuid4().hex
+                filename_key = randomstr + "_" + image.filename
+                filename_body = image
+
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
+
+                # Image Uploaded
+                s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="image/"+filename_key, Body=filename_body, ACL='public-read')
+
+                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/image/" + str(filename_key)
+                filename = filename.replace(" ", "+")
 
                 qry_module.image = filename
 
@@ -168,14 +210,26 @@ class ModulesResource(Resource):
 
     #endpoint for delete module by id
     def delete(self, id):
-        qry_module = Modules.query.get(id)
-        filename = qry_module.image
+        module = Modules.query.get(id)
+        filename = module.image
         
-        if qry_module is not None:
-            UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
-            os.remove(os.path.join("."+UPLOAD_FOLDER, filename))
+        if module is not None:
+            if filename is not None:
+                #remove image in storage
+                filename = "image/"+filename.split("/")[-1]
+                filename = filename.replace("+", " ")
 
-            db.session.delete(qry_module)
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
+
+                s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
+            
+            #remove database
+            db.session.delete(module)
             db.session.commit()
             return {"status": "DELETED SUCCESS"}, 200
         

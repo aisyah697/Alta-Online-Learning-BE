@@ -20,6 +20,9 @@ class config:
     UPLOAD_MEDIA_AVATAR = "/storage/media/avatar"
     UPLOAD_MEDIA_VIDEO = "/storage/media/video"
     UPLOAD_MEDIA_PRESENTATION = "/storage/media/presentation"
+    ACCESS_KEY_ID = cfg["aws"]["key_id"]
+    ACCESS_SECRET_KEY = cfg["aws"]["secret_key"]
+    BUCKET_NAME = cfg["aws"]["bucket"]
 
 class DevelopmentConfig(config):
     APP_DEBUG = True
