@@ -53,16 +53,6 @@ class MenteesResource(Resource):
         parser.add_argument("status", location="form", default="True")
         args = parser.parse_args()
 
-<<<<<<< HEAD
-        #cek phone number
-        if args["phone"] is not None:
-            phone = re.findall("^0[0-9]{7,14}", args["phone"])
-            if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
-                return {"status": "phone number not match"}, 404
-        else:
-            pass
-        
-=======
         #check username
         if len(args["username"]) < 6:
             return {"status": "username must be at least 6 character"}, 404
@@ -81,7 +71,6 @@ class MenteesResource(Resource):
         if match is None:
              return {"status": "your input of email is wrong"}, 404
 
->>>>>>> 6c67ea040b88eaebc91a3012d857172754c4462a
         #for status, status used to soft delete 
         if args["status"] == "True" or args["status"] == "true":
             args["status"] = True
@@ -137,7 +126,7 @@ class MenteesResource(Resource):
 
     #endpoint for soft delete
     def put(self, id):
-        #check id in querry or not
+        #check id in query or not
         qry_mentee = Mentees.query.get(id)
         if qry_mentee is None:
             return {'status': 'Mentee is NOT_FOUND'}, 404
