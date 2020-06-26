@@ -140,7 +140,7 @@ class MenteesResource(Resource):
 
     #endpoint for soft delete
     def put(self, id):
-        #check id in querry or not
+        #check id in query or not
         qry_mentee = Mentees.query.get(id)
         if qry_mentee is None:
             return {'status': 'Mentee is NOT_FOUND'}, 404

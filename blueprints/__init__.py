@@ -26,6 +26,7 @@ else:
 
 jwt = JWTManager(app)
 
+
 def mentee_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
