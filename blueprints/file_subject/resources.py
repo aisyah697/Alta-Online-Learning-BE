@@ -13,6 +13,7 @@ import hashlib, uuid
 #     jwt_required,
 #     get_jwt_claims,
 # )
+import boto3
 
 from .model import FilesSubject
 
@@ -51,17 +52,33 @@ class FilesSubjectResource(Resource):
             args["status"] = False
 
         #for upload image in storage
-        if args["category_file"] == "presentation":
-            UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_PRESENTATION"]
-        elif args["category_file"] == "video":
-            UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_VIDEO"]
-
         content_file = args["content_file"]
 
         if content_file:
             randomstr = uuid.uuid4().hex
-            filename = randomstr+"_"+content_file.filename
-            content_file.save(os.path.join("."+UPLOAD_FOLDER, filename))
+            filename_key = randomstr + "_" + content_file.filename
+            filename_body = content_file
+
+            # S3 Connect
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+            )
+
+            # File Uploaded
+            if args["category_file"] == "presentation":
+                s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="presentation/"+filename_key, Body=filename_body, ACL='public-read')
+
+                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/presentation/" + str(filename_key)
+                filename = filename.replace(" ", "+")
+
+            elif args["category_file"] == "video":
+                s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="video/"+filename_key, Body=filename_body, ACL='public-read')
+
+                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/video/" + str(filename_key)
+                filename = filename.replace(" ", "+")
+        
         else:
             filename = None
 
@@ -129,43 +146,79 @@ class FilesSubjectResource(Resource):
             if qry_file_subject.content_file is not None:
                 filename = qry_file_subject.content_file
 
-                #Remove content file subject in storage
+                #remove avatar in storage
                 if qry_file_subject.category_file == "presentation":
-                    UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_PRESENTATION"]
+                    filename = "presentation/"+filename.split("/")[-1]
+                    filename = filename.replace("+", " ")
                 elif qry_file_subject.category_file == "video":
-                    UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_VIDEO"]
-                
-                os.remove(os.path.join("."+UPLOAD_FOLDER, filename))
+                    filename = "video/"+filename.split("/")[-1]
+                    filename = filename.replace("+", " ")
 
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
+
+                s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
+
+                #Change content file subject in storage
                 content_file = args["content_file"]
                 
-                #Change content file subject in storage
-                if content_file:
-                    if args["category_file"] == "presentation":
-                        UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_PRESENTATION"]
-                    elif args["category_file"] == "video":
-                        UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_VIDEO"]
+                randomstr = uuid.uuid4().hex
+                filename_key = randomstr + "_" + content_file.filename
+                filename_body = content_file
 
-                    randomstr = uuid.uuid4().hex
-                    filename = randomstr+"_"+content_file.filename
-                    content_file.save(os.path.join("."+UPLOAD_FOLDER, filename))
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
 
+                # Image Uploaded
+                if args["category_file"] == "presentation":
+                    s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="presentation/"+filename_key, Body=filename_body, ACL='public-read')
+
+                    filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/presentation/" + str(filename_key)
+                    filename = filename.replace(" ", "+")
+
+                elif args["category_file"] == "video":
+                    s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="video/"+filename_key, Body=filename_body, ACL='public-read')
+
+                    filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/video/" + str(filename_key)
+                    filename = filename.replace(" ", "+")
+    
                 qry_file_subject.content_file = filename
 
             else:
-                if args["category_file"] == "presentation":
-                    UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_PRESENTATION"]
-                elif args["category_file"] == "video":
-                    UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_VIDEO"]
-
                 content_file = args["content_file"]
                 
-                #Change content file subject in storage
-                if content_file:
-                    randomstr = uuid.uuid4().hex
-                    filename = randomstr+"_"+content_file.filename
-                    content_file.save(os.path.join("."+UPLOAD_FOLDER, filename))
+                randomstr = uuid.uuid4().hex
+                filename_key = randomstr + "_" + content_file.filename
+                filename_body = content_file
 
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
+
+                # Image Uploaded
+                if args["category_file"] == "presentation":
+                    s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="presentation/"+filename_key, Body=filename_body, ACL='public-read')
+
+                    filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/presentation/" + str(filename_key)
+                    filename = filename.replace(" ", "+")
+
+                elif args["category_file"] == "video":
+                    s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="video/"+filename_key, Body=filename_body, ACL='public-read')
+
+                    filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/video/" + str(filename_key)
+                    filename = filename.replace(" ", "+")
+    
                 qry_file_subject.content_file = filename
 
         if args['category_file'] is not None:
@@ -178,11 +231,26 @@ class FilesSubjectResource(Resource):
     #Endpoint delete file subject by Id
     def delete(self, id):        
         qry_file_subject = FilesSubject.query.get(id)
-        filename = qry_file_subject.content_file
-
+        #Check content file subject in query
         if qry_file_subject is not None:
-            UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_VIDEO"]
-            os.remove(os.path.join("."+UPLOAD_FOLDER, filename))
+            filename = qry_file_subject.content_file
+
+            #remove avatar in storage
+            if qry_file_subject.category_file == "presentation":
+                filename = "presentation/"+filename.split("/")[-1]
+                filename = filename.replace("+", " ")
+            elif qry_file_subject.category_file == "video":
+                filename = "video/"+filename.split("/")[-1]
+                filename = filename.replace("+", " ")
+
+            # S3 Connect
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+            )
+            
+            s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
             
             db.session.delete(qry_file_subject)
             db.session.commit()

@@ -10,10 +10,14 @@ from flask_jwt_extended import (
     JWTManager,
     create_access_token,
     get_jwt_identity,
+    verify_jwt_in_request,
     jwt_required,
     get_jwt_claims,
 )
+from blueprints import admin_required
+
 import re
+import boto3
 
 from .model import Admins
 
@@ -36,93 +40,114 @@ class AdminsResource(Resource):
         return {"status": "Id Admins not found"}, 404
 
     #endpoint for post admin
+    @admin_required
     def post(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument("username", location="form", required=True)
-        parser.add_argument("password", location="form", required=True)
-        parser.add_argument("full_name", location="form")
-        parser.add_argument("role", location="form", required=True, help='invalid status', choices=('super', 'council', 'academic', 'bussiness'))
-        parser.add_argument("email", location="form")
-        parser.add_argument("address", location="form")
-        parser.add_argument("phone", location="form")
-        parser.add_argument("place_birth", location="form")
-        parser.add_argument("date_birth", location="form")
-        parser.add_argument("avatar", type=werkzeug.datastructures.FileStorage, location='files')
-        parser.add_argument("github", location="form")
-        parser.add_argument("description", location="form")
-        parser.add_argument("status", location="form", default="True")
-        args = parser.parse_args()
+        #check role admin
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        if claims["role"] == "super":
+            parser = reqparse.RequestParser()
+            parser.add_argument("username", location="form", required=True)
+            parser.add_argument("password", location="form", required=True)
+            parser.add_argument("full_name", location="form")
+            parser.add_argument("role", location="form", required=True, help='invalid status', choices=('super', 'council', 'academic', 'bussiness'))
+            parser.add_argument("email", location="form")
+            parser.add_argument("address", location="form")
+            parser.add_argument("phone", location="form")
+            parser.add_argument("place_birth", location="form")
+            parser.add_argument("date_birth", location="form")
+            parser.add_argument("avatar", type=werkzeug.datastructures.FileStorage, location='files')
+            parser.add_argument("github", location="form")
+            parser.add_argument("description", location="form")
+            parser.add_argument("status", location="form", default="True")
+            args = parser.parse_args()
 
-        #check username
-        if len(args["username"]) < 6:
-            return {"status": "username must be at least 6 character"}, 404
+            #check username
+            if len(args["username"]) < 6:
+                return {"status": "username must be at least 6 character"}, 404
 
-        #check phone number
-        phone = re.findall("^0[0-9]{7,14}", args["phone"])
-        if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
-            return {"status": "phone number not match"}, 404
+            #check phone number
+            phone = re.findall("^0[0-9]{7,14}", args["phone"])
+            if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
+                return {"status": "phone number not match"}, 404
 
-        #check password
-        if len(args["password"]) < 6:
-            return {"status": "password must be 6 character"}, 404
+            #check password
+            if len(args["password"]) < 6:
+                return {"status": "password must be 6 character"}, 404
 
-        #check email
-        match=re.search("^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", args["email"])
-        if match is None:
-             return {"status": "your input of email is wrong"}, 404
+            #check email
+            match=re.search("^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", args["email"])
+            if match is None:
+                 return {"status": "your input of email is wrong"}, 404
 
-        #for status, status used to soft delete 
-        if args["status"] == "True" or args["status"] == "true":
-            args["status"] = True
-        elif args["status"] == "False" or args["status"] == "false":
-            args["status"] = False
+            #for status, status used to soft delete 
+            if args["status"] == "True" or args["status"] == "true":
+                args["status"] = True
+            elif args["status"] == "False" or args["status"] == "false":
+                args["status"] = False
 
-        #for upload image in storage
-        UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
+            #for upload image in storage
+            avatar = args["avatar"]
 
-        admin_avatar = args["avatar"]
+            if avatar:
+                randomstr = uuid.uuid4().hex
+                filename_key = randomstr + "_" + avatar.filename
+                filename_body = avatar
 
-        if admin_avatar:
-            randomstr = uuid.uuid4().hex
-            filename = randomstr+"_"+admin_avatar.filename
-            admin_avatar.save(os.path.join("."+UPLOAD_FOLDER, filename))
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
+
+                # Image Uploaded
+                s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="avatar/"+filename_key, Body=filename_body, ACL='public-read')
+
+                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
+                filename = filename.replace(" ", "+")
+            
+            else:
+                filename = None
+
+            #for filled salt on field's table of admin
+            salt = uuid.uuid4().hex
+            encoded = ("%s%s" % (args["password"], salt)).encode("utf-8")
+            hash_pass = hashlib.sha512(encoded).hexdigest()
+
+            result = Admins(
+                args["username"],
+                hash_pass,
+                args["full_name"],
+                args["role"],
+                args["email"],
+                args["address"],
+                args["phone"],
+                args["place_birth"],
+                args["date_birth"],
+                filename,
+                args["github"],
+                args["description"],
+                salt,
+                args["status"]
+            )
+
+            db.session.add(result)
+            db.session.commit()
+
+            #for get token when register
+            jwt_username = marshal(result, Admins.jwt_claims_fields)
+            jwt_username["status"] = "admin"
+            token = create_access_token(identity=args["username"], user_claims=jwt_username)
+
+            #add key token in response of endpoint
+            result = marshal(result, Admins.response_fields)
+            result["token"] = token
+            
+            return result, 200
+        
         else:
-            filename = None
-
-        #for filled salt on field's table of admin
-        salt = uuid.uuid4().hex
-        encoded = ("%s%s" % (args["password"], salt)).encode("utf-8")
-        hash_pass = hashlib.sha512(encoded).hexdigest()
-
-        result = Admins(
-            args["username"],
-            hash_pass,
-            args["full_name"],
-            args["role"],
-            args["email"],
-            args["address"],
-            args["phone"],
-            args["place_birth"],
-            args["date_birth"],
-            filename,
-            args["github"],
-            args["description"],
-            salt,
-            args["status"]
-        )
-
-        db.session.add(result)
-        db.session.commit()
-
-        #for get token when register
-        jwt_username = marshal(result, Admins.jwt_claims_fields)
-        token = create_access_token(identity=args["username"], user_claims=jwt_username)
-
-        #add key token in response of endpoint
-        result = marshal(result, Admins.response_fields)
-        result["token"] = token
-
-        return result, 200
+            return {"status": "admin isn't at role super admin"}, 404
 
     #endpoint for soft delete
     def put(self, id):
@@ -207,7 +232,7 @@ class AdminsResource(Resource):
             phone = re.findall("^0[0-9]{7,14}", args["phone"])
             if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
                 return {"status": "phone number not match"}, 404
-            qry_mentee.phone = args['phone']
+            qry_admin.phone = args['phone']
 
         if args['place_birth'] is not None:
             qry_admin.place_birth = args['place_birth']
@@ -216,34 +241,63 @@ class AdminsResource(Resource):
             qry_admin.date_birth = args['date_birth']
 
         if args['avatar'] is not None:
-            #Check avatar in querry
+            #Check avatar in query
             if qry_admin.avatar is not None:
                 filename = qry_admin.avatar
+                #remove avatar in storage
+                filename = "avatar/"+filename.split("/")[-1]
+                filename = filename.replace("+", " ")
 
-                #Remove avatar in storage
-                UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
-                os.remove(os.path.join("."+UPLOAD_FOLDER, filename))
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
 
-                admin_avatar = args["avatar"]
-                
-                #Change avatar in storage
-                if admin_avatar:
-                    randomstr = uuid.uuid4().hex
-                    filename = randomstr+"_"+admin_avatar.filename
-                    admin_avatar.save(os.path.join("."+UPLOAD_FOLDER, filename))
+                s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
+ 
+                # #change avatar in storage
+                avatar = args["avatar"]
+
+                randomstr = uuid.uuid4().hex
+                filename_key = randomstr + "_" + avatar.filename
+                filename_body = avatar
+
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
+
+                # Image Uploaded
+                s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="avatar/"+filename_key, Body=filename_body, ACL='public-read')
+
+                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
+                filename = filename.replace(" ", "+")
 
                 qry_admin.avatar = filename
 
             else:
-                UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
+                avatar = args["avatar"]
 
-                admin_avatar = args["avatar"]
-                
-                #Change avatar in storage
-                if admin_avatar:
-                    randomstr = uuid.uuid4().hex
-                    filename = randomstr+"_"+admin_avatar.filename
-                    admin_avatar.save(os.path.join("."+UPLOAD_FOLDER, filename))
+                randomstr = uuid.uuid4().hex
+                filename_key = randomstr + "_" + avatar.filename
+                filename_body = avatar
+
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
+
+                # Image Uploaded
+                s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="avatar/"+filename_key, Body=filename_body, ACL='public-read')
+
+                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
+                filename = filename.replace(" ", "+")
 
                 qry_admin.avatar = filename
 
@@ -263,9 +317,21 @@ class AdminsResource(Resource):
         filename = admin.avatar
         
         if admin is not None:
-            UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
-            os.remove(os.path.join("."+UPLOAD_FOLDER, filename))
+            if filename is not None:
+                #remove avatar in storage
+                filename = "avatar/"+filename.split("/")[-1]
+                filename = filename.replace("+", " ")
 
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
+
+                s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
+            
+            #remove database
             db.session.delete(admin)
             db.session.commit()
             return {"status": "DELETED SUCCESS"}, 200
