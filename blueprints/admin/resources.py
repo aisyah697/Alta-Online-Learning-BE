@@ -80,7 +80,7 @@ class AdminsResource(Resource):
             if match is None:
                  return {"status": "your input of email is wrong"}, 404
 
-            #for status, status used to soft delete 
+            #for status, status used to soft delete
             if args["status"] == "True" or args["status"] == "true":
                 args["status"] = True
             elif args["status"] == "False" or args["status"] == "false":
@@ -106,7 +106,7 @@ class AdminsResource(Resource):
 
                 filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
                 filename = filename.replace(" ", "+")
-            
+
             else:
                 filename = None
 
@@ -143,7 +143,7 @@ class AdminsResource(Resource):
             #add key token in response of endpoint
             result = marshal(result, Admins.response_fields)
             result["token"] = token
-            
+
             return result, 200
         
         else:
@@ -232,7 +232,7 @@ class AdminsResource(Resource):
             phone = re.findall("^0[0-9]{7,14}", args["phone"])
             if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
                 return {"status": "phone number not match"}, 404
-            qry_mentee.phone = args['phone']
+            qry_admin.phone = args['phone']
 
         if args['place_birth'] is not None:
             qry_admin.place_birth = args['place_birth']
