@@ -8,4 +8,4 @@ echo "$DOCKER_PASSWORD" | docker login --username $DOCKER_USERNAME --password-st
 docker stop flaskdemo
 docker rm flaskdemo
 docker rmi yopiragil/alta:latest
-docker run -d --name flaskdemo -p 5050:5050 yopiragil/alta:latest
+docker run -d --name flaskdemo -p 5000:5000 yopiragil/alta:latest
