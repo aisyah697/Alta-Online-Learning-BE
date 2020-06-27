@@ -28,7 +28,7 @@ jwt = JWTManager(app)
 
 @app.route('/')
 def hello():
-    return {'status', 'okay'}, 200
+    return {'status': 'Thanks Ajay, Yopi, Aisyah ----- Semangat :)'}, 200
 
 def mentee_required(fn):
     @wraps(fn)

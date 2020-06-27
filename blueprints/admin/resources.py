@@ -67,18 +67,20 @@ class AdminsResource(Resource):
                 return {"status": "username must be at least 6 character"}, 404
 
             #check phone number
-            phone = re.findall("^0[0-9]{7,14}", args["phone"])
-            if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
-                return {"status": "phone number not match"}, 404
+            if args['phone'] is not None:
+                phone = re.findall("^0[0-9]{7,14}", args["phone"])
+                if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
+                    return {"status": "phone number not match"}, 404
 
             #check password
             if len(args["password"]) < 6:
                 return {"status": "password must be 6 character"}, 404
 
             #check email
-            match=re.search("^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", args["email"])
-            if match is None:
-                 return {"status": "your input of email is wrong"}, 404
+            if args['phone'] is not None:
+                match=re.search("^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", args["email"])
+                if match is None:
+                     return {"status": "your input of email is wrong"}, 404
 
             #for status, status used to soft delete
             if args["status"] == "True" or args["status"] == "true":
