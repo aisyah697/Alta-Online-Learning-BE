@@ -1,0 +1,11 @@
+#!/bin/bash
+
+eval "$(ssh-agent -s)" &&
+ssh-add -k ~/.ssh/id_rsa &&
+
+source ~/.profile
+echo "$DOCKER_PASSWORD" | docker login --username $DOCKER_USERNAME --password-stdin
+Sudo docker stop flaskdemo
+Sudo docker rm flaskdemo
+Sudo docker rmi yopiragil/alta:latest
+Sudo docker run -d --name backend -p 5050:5050 yopiragil/alta:latest
