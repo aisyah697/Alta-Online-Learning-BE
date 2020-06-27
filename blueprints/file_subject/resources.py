@@ -33,7 +33,7 @@ class FilesSubjectResource(Resource):
         if qry_file_subject is not None:
             return marshal(qry_file_subject, FilesSubject.response_fields), 200
         
-        return {"status": "Id File Subject not found"}, 404
+        return {"status": "Id File Mentee not found"}, 404
 
     #endpoint for post file subject
     def post(self):
@@ -101,7 +101,7 @@ class FilesSubjectResource(Resource):
         qry_file_subject = FilesSubject.query.get(id)
         
         if qry_file_subject is None:
-            return {'status': 'File Subject is NOT_FOUND'}, 404
+            return {'status': 'File Mentee is NOT_FOUND'}, 404
         
         #input update status for soft delete
         parser = reqparse.RequestParser()
@@ -126,7 +126,7 @@ class FilesSubjectResource(Resource):
         #check id in querry or not
         qry_file_subject = FilesSubject.query.filter_by(status=True).filter_by(id=id).first()
         if qry_file_subject is None:
-            return {'status': 'File Subject is NOT_FOUND'}, 404
+            return {'status': 'File Mentee is NOT_FOUND'}, 404
 
         parser = reqparse.RequestParser()
         parser.add_argument("subject_id", location="form")

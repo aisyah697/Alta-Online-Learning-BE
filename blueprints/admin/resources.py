@@ -232,7 +232,7 @@ class AdminsResource(Resource):
             phone = re.findall("^0[0-9]{7,14}", args["phone"])
             if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
                 return {"status": "phone number not match"}, 404
-            qry_mentee.phone = args['phone']
+            qry_admin.phone = args['phone']
 
         if args['place_birth'] is not None:
             qry_admin.place_birth = args['place_birth']
