@@ -26,6 +26,10 @@ else:
 
 jwt = JWTManager(app)
 
+@app.route('/')
+def hello():
+    return {'status', 'okay'}, 200
+
 def mentee_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):

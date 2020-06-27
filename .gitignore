@@ -4,7 +4,7 @@ config.cpython-36
 *.cpython-36
 # dependencies
 /node_modules
-
+venv/
 # misc
 .DS_Store
 .env.local
