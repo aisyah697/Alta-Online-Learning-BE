@@ -26,24 +26,28 @@ else:
 
 jwt = JWTManager(app)
 
-def mentee(fn):
+@app.route('/')
+def hello():
+    return {'status': 'Thanks Agus, Ajay, Yopi, Aisyah ----- Semangat :)'}, 200
+
+def mentee_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        if claims['status'] != "mentee":
+            return {'status': 'FORBIDDEN', 'message': 'Mentee Only'}, 403
+        else:
+            return fn(*args, **kwargs)
+    return wrapper
+
+def admin_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         verify_jwt_in_request()
         claims = get_jwt_claims()
         if claims['status'] != "admin":
-            return {'status': 'FORBIDDEN', 'message': 'Internal Only'}, 403
-        else:
-            return fn(*args, **kwargs)
-    return wrapper
-
-def admin(fn):
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        verify_jwt_in_request()
-        claims = get_jwt_claims()
-        if claims['status'] != "pelapak":
-            return {'status': 'FORBIDDEN', 'message': 'Internal Only'}, 403
+            return {'status': 'FORBIDDEN', 'message': 'Admin Only'}, 403
         else:
             return fn(*args, **kwargs)
     return wrapper

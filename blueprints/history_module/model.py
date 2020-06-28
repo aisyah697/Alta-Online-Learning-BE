@@ -17,6 +17,7 @@ class HistoriesModule(db.Model):
     mentee_id = db.Column(db.Integer, db.ForeignKey(Mentees.id, ondelete="CASCADE"), nullable=False)
     score = db.Column(db.Integer)
     is_complete = db.Column(db.Boolean)
+    lock_key = db.Column(db.Boolean)
     status = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
@@ -27,16 +28,18 @@ class HistoriesModule(db.Model):
         "mentee_id": fields.Integer,
         "score": fields.Integer,
         "is_complete": fields.Boolean,
+        "lock_key": fields.Boolean,
         "status": fields.Boolean,
         "created_at": fields.DateTime,
         "update_at": fields.DateTime
     }
 
-    def __init__ (self, module_id, mentee_id, score, is_complete, status):
+    def __init__ (self, module_id, mentee_id, score, is_complete, lock_key, status):
         self.module_id = module_id
         self.mentee_id = mentee_id
         self.score = score
         self.is_complete = is_complete
+        self.lock_key = lock_key
         self.status = status
 
     def __rpr__(self):

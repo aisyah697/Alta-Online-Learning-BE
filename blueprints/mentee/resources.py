@@ -13,6 +13,9 @@ from flask_jwt_extended import (
     jwt_required,
     get_jwt_claims,
 )
+from blueprints import admin_required, mentee_required
+
+import boto3
 import re
 
 from .model import Mentees
@@ -58,18 +61,20 @@ class MenteesResource(Resource):
             return {"status": "username must be at least 6 character"}, 404
 
         #check phone number
-        phone = re.findall("^0[0-9]{7,14}", args["phone"])
-        if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
-            return {"status": "phone number not match"}, 404
+        if args["phone"] is not None:
+            phone = re.findall("^0[0-9]{7,14}", args["phone"])
+            if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
+                return {"status": "phone number not match"}, 404
 
         #check password
         if len(args["password"]) < 6:
             return {"status": "password must be at least 6 character"}, 404
 
         #check email
-        match=re.search("^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", args["email"])
-        if match is None:
-             return {"status": "your input of email is wrong"}, 404
+        if args["email"] is not None:
+            match=re.search("^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$", args["email"])
+            if match is None:
+                return {"status": "your input of email is wrong"}, 404
 
         #for status, status used to soft delete 
         if args["status"] == "True" or args["status"] == "true":
@@ -78,14 +83,26 @@ class MenteesResource(Resource):
             args["status"] = False
 
         #for upload image in storage
-        UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
+        avatar = args["avatar"]
 
-        mentee_avatar = args["avatar"]
-
-        if mentee_avatar:
+        if avatar:
             randomstr = uuid.uuid4().hex
-            filename = randomstr+"_"+mentee_avatar.filename
-            mentee_avatar.save(os.path.join("."+UPLOAD_FOLDER, filename))
+            filename_key = randomstr + "_" + avatar.filename
+            filename_body = avatar
+
+            # S3 Connect
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+            )
+
+            # Image Uploaded
+            s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="avatar/"+filename_key, Body=filename_body, ACL='public-read')
+
+            filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
+            filename = filename.replace(" ", "+")
+        
         else:
             filename = None
 
@@ -116,6 +133,7 @@ class MenteesResource(Resource):
 
         #for get token when register
         jwt_username = marshal(result, Mentees.jwt_claims_fields)
+        jwt_username["status"] = "mentee"
         token = create_access_token(identity=args["username"], user_claims=jwt_username)
 
         #add key token in response of endpoint
@@ -126,7 +144,7 @@ class MenteesResource(Resource):
 
     #endpoint for soft delete
     def put(self, id):
-        #check id in querry or not
+        #check id in query or not
         qry_mentee = Mentees.query.get(id)
         if qry_mentee is None:
             return {'status': 'Mentee is NOT_FOUND'}, 404
@@ -152,6 +170,7 @@ class MenteesResource(Resource):
         return marshal(qry_mentee, Mentees.response_fields), 200
 
     #endpoint for update field
+    @mentee_required
     def patch(self, id):
         qry_mentee = Mentees.query.filter_by(status=True).filter_by(id=id).first()
         if qry_mentee is None:
@@ -191,7 +210,7 @@ class MenteesResource(Resource):
 
         if args['email'] is not None:
             #check email
-            match=re.search("^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", args["email"])
+            match=re.search("^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$", args["email"])
             if match is None:
                 return {"status": "your input of email is wrong"}, 404
             qry_mentee.email = args['email']
@@ -213,34 +232,63 @@ class MenteesResource(Resource):
             qry_mentee.date_birth = args['date_birth']
 
         if args['avatar'] is not None:
-            #Check avatar in querry
+            #Check avatar in query
             if qry_mentee.avatar is not None:
                 filename = qry_mentee.avatar
+                #remove avatar in storage
+                filename = "avatar/"+filename.split("/")[-1]
+                filename = filename.replace("+", " ")
 
-                #Remove avatar in storage
-                UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
-                os.remove(os.path.join("." + UPLOAD_FOLDER, filename))
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
 
-                mentee_avatar = args["avatar"]
+                s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
+ 
+                # #change avatar in storage
+                avatar = args["avatar"]
 
-                #Change avatar in storage
-                if mentee_avatar:
-                    randomstr = uuid.uuid4().hex #get random string to image filename
-                    filename = randomstr+"_"+mentee_avatar.filename
-                    mentee_avatar.save(os.path.join("."+UPLOAD_FOLDER, filename))
+                randomstr = uuid.uuid4().hex
+                filename_key = randomstr + "_" + avatar.filename
+                filename_body = avatar
+
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
+
+                # Image Uploaded
+                s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="avatar/"+filename_key, Body=filename_body, ACL='public-read')
+
+                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
+                filename = filename.replace(" ", "+")
 
                 qry_mentee.avatar = filename
-            
+
             else:
-                UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
+                avatar = args["avatar"]
 
-                mentee_avatar = args["avatar"]
+                randomstr = uuid.uuid4().hex
+                filename_key = randomstr + "_" + avatar.filename
+                filename_body = avatar
 
-                #Change avatar in storage
-                if mentee_avatar:
-                    randomstr = uuid.uuid4().hex #get random string to image filename
-                    filename = randomstr+"_"+mentee_avatar.filename
-                    mentee_avatar.save(os.path.join("."+UPLOAD_FOLDER, filename))
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
+
+                # Image Uploaded
+                s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="avatar/"+filename_key, Body=filename_body, ACL='public-read')
+
+                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
+                filename = filename.replace(" ", "+")
 
                 qry_mentee.avatar = filename
 
@@ -263,9 +311,21 @@ class MenteesResource(Resource):
         filename = mentee.avatar
         
         if mentee is not None:
-            UPLOAD_FOLDER = app.config["UPLOAD_MEDIA_AVATAR"]
-            os.remove(os.path.join("." + UPLOAD_FOLDER, filename))
+            if filename is not None:
+                #remove avatar in storage
+                filename = "avatar/"+filename.split("/")[-1]
+                filename = filename.replace("+", " ")
 
+                # S3 Connect
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                )
+
+                s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
+            
+            #remove database
             db.session.delete(mentee)
             db.session.commit()
             return {"status": "DELETED SUCCESS"}, 200
@@ -274,18 +334,33 @@ class MenteesResource(Resource):
 
 
 class MenteesAll(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+
     #endpoint to get all and sort by username, full_name and role
+    @admin_required
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)
         parser.add_argument('rp', type=int, location='args', default=25)
         parser.add_argument('orderby', location='args', help='invalid status', choices=("username", "full_name"))
         parser.add_argument('sort', location='args', help='invalid status', choices=("asc", "desc"))
+        parser.add_argument('search', location='args', help='Key word is None')
         args = parser.parse_args()
 
         offset = (args['p'] * args['rp']) - args['rp']
 
         qry_mentee = Mentees.query
+
+        if args['search'] is not None:
+            qry_mentee = qry_mentee.filter(
+                Mentees.username.like('%'+args['search']+'%') |
+                Mentees.full_name.like('%'+args['search']+'%') | 
+                Mentees.address.like('%'+args['search']+'%') |
+                Mentees.email.like('%'+args['search']+'%') |
+                Mentees.phone.like('%'+args['search']+'%')
+                )
 
         if args["orderby"] is not None:
             if args['orderby'] == "username":
@@ -309,7 +384,12 @@ class MenteesAll(Resource):
 
 
 class MenteesAllStatus(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+        
     #endpoint to get all status of mentee 
+    @admin_required
     def get(self):
         qry_mentee = Mentees.query
 

@@ -15,6 +15,7 @@ from sqlalchemy import desc
 # )
 
 from .model import Exams
+from ..subject.model import Subjects
 
 bp_exam = Blueprint("exam", __name__)
 api = Api(bp_exam)
@@ -42,10 +43,16 @@ class ExamsResource(Resource):
         parser.add_argument("status", location="json", type=bool, default=True)
         args = parser.parse_args()
 
+        #check subject_id
+        subject_id = Subjects.query.get(args["subject_id"])
+
+        if subject_id is None:
+            return {"status": "Subject isn't in database"}, 404
+
         #Check there no same subject_id
-        subject_id_exam = Exams.query.filter_by(subject_id=args["subject_id"]).all()
+        subject_id_exam = Exams.query.filter_by(subject_id=args["subject_id"]).first()
         
-        if subject_id_exam != []:
+        if subject_id_exam is not None:
             return {"status": "Exam for this subject is already there"}, 404
 
         result = Exams(
