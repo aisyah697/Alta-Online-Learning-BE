@@ -40,6 +40,7 @@ class SubjectsResource(Resource):
         parser.add_argument("module_id", location="json", required=True)
         parser.add_argument("name", location="json")
         parser.add_argument("description", location="json")
+        parser.add_argument("quesioner", location="json")
         parser.add_argument("status", location="json", default=True, type=bool)
         args = parser.parse_args()
 
@@ -47,6 +48,7 @@ class SubjectsResource(Resource):
             args["module_id"],
             args["name"],
             args["description"],
+            args["quesioner"],
             args["status"]
         )
 
@@ -84,6 +86,7 @@ class SubjectsResource(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument("name", location="json")
         parser.add_argument("description", location="json")
+        parser.add_argument("quesioner", location="json")
         args = parser.parse_args()
 
         if args['name'] is not None:
@@ -91,6 +94,9 @@ class SubjectsResource(Resource):
         
         if args['description'] is not None:
             qry_subject.description = args["description"]
+        
+        if args['quesioner'] is not None:
+            qry_subject.quesioner = args["quesioner"]
 
         db.session.commit()
 

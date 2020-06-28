@@ -3,14 +3,14 @@ from flask import Blueprint
 from flask_restful import Resource, Api, reqparse, marshal, inputs
 from blueprints import db, app
 from sqlalchemy import desc
-# import hashlib, uuid
-# from flask_jwt_extended import (
-#     JWTManager,
-#     create_access_token,
-#     get_jwt_identity,
-#     jwt_required,
-#     get_jwt_claims,
-# )
+from flask_jwt_extended import (
+    JWTManager,
+    get_jwt_identity,
+    verify_jwt_in_request,
+    jwt_required,
+    get_jwt_claims,
+)
+from blueprints import mentee_required, admin_required
 
 from .model import HistoriesAltatest
 from ..mentee.model import Mentees
@@ -39,24 +39,26 @@ class HistoriesAltatestResource(Resource):
         return {"status": "Id History Altatest is not found"}, 404
 
     # endpoint post history altatest
+    @mentee_required
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument("altatest_id", location="json", required=True)
-        parser.add_argument("mentee_id", location="json", required=True)
         parser.add_argument("score", location="json")
         parser.add_argument("status", location="json", type=bool, default=True)
         args = parser.parse_args()
 
+        #check id altatest
         qry_altatest = Altatests.query.get(args["altatest_id"])
-        qry_mentee = Mentees.query.get(args["mentee_id"])
         if qry_altatest is None:
             return {"status": "Altatest is Not Found"}, 404
-        if qry_mentee is None:
-            return {"status": "Mentee is Not Found"}, 404
+        
+        #get mentee_id from id authentification
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
 
         result = HistoriesAltatest(
             args["altatest_id"],
-            args["mentee_id"],
+            claims["id"],
             args["score"],
             args["status"]
         )
@@ -87,25 +89,34 @@ class HistoriesAltatestResource(Resource):
         return marshal(qry_history_altatest, HistoriesAltatest.response_fields), 200
 
     #endpoint for change score
+    @admin_required
     def patch(self, id):
-        #check id in query or not
-        qry_history_altatest = HistoriesAltatest.query.get(id)
+        #check role admin
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
         
-        if qry_history_altatest is None:
-            return {'status': 'History Altatest is NOT_FOUND'}, 404
-        
-        #input update status for soft delete
-        parser = reqparse.RequestParser()
-        parser.add_argument("score", location="json")
-        args = parser.parse_args()
-        
-        #change status for soft delete      
-        if args['score'] is not None:
-            qry_history_altatest.score = args['score']
+        if claims["role"] == "super" or claims["role"] == "council" or claims["role"] == "academic":
+            #check id in query or not
+            qry_history_altatest = HistoriesAltatest.query.get(id)
+            
+            if qry_history_altatest is None:
+                return {'status': 'History Altatest is NOT_FOUND'}, 404
+            
+            #input update status for soft delete
+            parser = reqparse.RequestParser()
+            parser.add_argument("score", location="json")
+            args = parser.parse_args()
+            
+            #change status for soft delete      
+            if args['score'] is not None:
+                qry_history_altatest.score = args['score']
 
-        db.session.commit()
+            db.session.commit()
 
-        return marshal(qry_history_altatest, HistoriesAltatest.response_fields), 200
+            return marshal(qry_history_altatest, HistoriesAltatest.response_fields), 200
+
+        else:
+            return {"status": "admin isn't at role super admin"}, 404
 
     #Endpoint delete history Altatest by Id
     def delete(self, id):
@@ -121,7 +132,12 @@ class HistoriesAltatestResource(Resource):
 
 
 class HistoriesAltatestAll(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+
     #endpoint to get all and sort by score and created_at
+    @admin_required
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)
@@ -155,7 +171,12 @@ class HistoriesAltatestAll(Resource):
         return rows, 200
 
 class HistoriesAltatestAllStatus(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+        
     #endpoint to get all status of history altatest 
+    @admin_required
     def get(self):
         qry_history_altatest = HistoriesAltatest.query
 

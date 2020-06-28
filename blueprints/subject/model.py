@@ -16,6 +16,7 @@ class Subjects(db.Model):
     module_id = db.Column(db.Integer, db.ForeignKey(Modules.id, ondelete="CASCADE"), nullable=False)
     name = db.Column(db.String(250), nullable=False, unique=True)
     description = db.Column(db.Text)
+    quesioner = db.Column(db.String(250))
     status = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
@@ -28,15 +29,17 @@ class Subjects(db.Model):
         "module_id": fields.Integer,
         "name": fields.String,
         "description": fields.String,
+        "quesioner": fields.String,
         "status": fields.Boolean,
         "created_at": fields.DateTime,
         "update_at": fields.DateTime
     }
 
-    def __init__ (self, module_id, name, description, status):
+    def __init__ (self, module_id, name, description, quesioner, status):
         self.module_id = module_id
         self.name = name
         self.description = description
+        self.quesioner = quesioner
         self.status = status
 
     def __rpr__(self):

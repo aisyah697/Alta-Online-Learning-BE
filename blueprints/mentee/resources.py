@@ -13,6 +13,8 @@ from flask_jwt_extended import (
     jwt_required,
     get_jwt_claims,
 )
+from blueprints import admin_required, mentee_required
+
 import boto3
 import re
 
@@ -59,18 +61,20 @@ class MenteesResource(Resource):
             return {"status": "username must be at least 6 character"}, 404
 
         #check phone number
-        phone = re.findall("^0[0-9]{7,14}", args["phone"])
-        if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
-            return {"status": "phone number not match"}, 404
+        if args["phone"] is not None:
+            phone = re.findall("^0[0-9]{7,14}", args["phone"])
+            if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
+                return {"status": "phone number not match"}, 404
 
         #check password
         if len(args["password"]) < 6:
             return {"status": "password must be at least 6 character"}, 404
 
         #check email
-        match=re.search("^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", args["email"])
-        if match is None:
-             return {"status": "your input of email is wrong"}, 404
+        if args["email"] is not None:
+            match=re.search("^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$", args["email"])
+            if match is None:
+                return {"status": "your input of email is wrong"}, 404
 
         #for status, status used to soft delete 
         if args["status"] == "True" or args["status"] == "true":
@@ -166,6 +170,7 @@ class MenteesResource(Resource):
         return marshal(qry_mentee, Mentees.response_fields), 200
 
     #endpoint for update field
+    @mentee_required
     def patch(self, id):
         qry_mentee = Mentees.query.filter_by(status=True).filter_by(id=id).first()
         if qry_mentee is None:
@@ -205,7 +210,7 @@ class MenteesResource(Resource):
 
         if args['email'] is not None:
             #check email
-            match=re.search("^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", args["email"])
+            match=re.search("^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$", args["email"])
             if match is None:
                 return {"status": "your input of email is wrong"}, 404
             qry_mentee.email = args['email']
@@ -329,7 +334,12 @@ class MenteesResource(Resource):
 
 
 class MenteesAll(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+
     #endpoint to get all and sort by username, full_name and role
+    @admin_required
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)
@@ -364,7 +374,12 @@ class MenteesAll(Resource):
 
 
 class MenteesAllStatus(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+        
     #endpoint to get all status of mentee 
+    @admin_required
     def get(self):
         qry_mentee = Mentees.query
 
