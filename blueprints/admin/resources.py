@@ -367,11 +367,21 @@ class AdminsAll(Resource):
             parser.add_argument('rp', type=int, location='args', default=25)
             parser.add_argument('orderby', location='args', help='invalid status', choices=("username", "full_name", "role"))
             parser.add_argument('sort', location='args', help='invalid status', choices=("asc", "desc"))
+            parser.add_argument('search', location='args', help='Key word is None')
             args = parser.parse_args()
 
             offset = (args['p'] * args['rp']) - args['rp']
 
             qry_admin = Admins.query
+
+            if args['search'] is not None:
+                qry_admin = qry_admin.filter(
+                    Admins.username.like('%'+args['search']+'%') |
+                    Admins.full_name.like('%'+args['search']+'%') | 
+                    Admins.address.like('%'+args['search']+'%') |
+                    Admins.email.like('%'+args['search']+'%') |
+                    Admins.phone.like('%'+args['search']+'%')
+                    )
 
             if args["orderby"] is not None:
                 if args['orderby'] == "username":
@@ -395,9 +405,7 @@ class AdminsAll(Resource):
                 if row.status == True:
                     row = marshal(row, Admins.response_fields)
                     rows.append(row)
-
-            return rows, 200
-
+                    
         else:
             return {"status": "admin isn't at role super admin"}, 404
 
