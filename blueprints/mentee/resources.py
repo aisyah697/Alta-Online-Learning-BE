@@ -336,11 +336,21 @@ class MenteesAll(Resource):
         parser.add_argument('rp', type=int, location='args', default=25)
         parser.add_argument('orderby', location='args', help='invalid status', choices=("username", "full_name"))
         parser.add_argument('sort', location='args', help='invalid status', choices=("asc", "desc"))
+        parser.add_argument('search', location='args', help='Key word is None')
         args = parser.parse_args()
 
         offset = (args['p'] * args['rp']) - args['rp']
 
         qry_mentee = Mentees.query
+
+        if args['search'] is not None:
+            qry_mentee = qry_mentee.filter(
+                Mentees.username.like('%'+args['search']+'%') |
+                Mentees.full_name.like('%'+args['search']+'%') | 
+                Mentees.address.like('%'+args['search']+'%') |
+                Mentees.email.like('%'+args['search']+'%') |
+                Mentees.phone.like('%'+args['search']+'%')
+                )
 
         if args["orderby"] is not None:
             if args['orderby'] == "username":
