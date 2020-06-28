@@ -31,6 +31,7 @@ class AdminsResource(Resource):
         return {"status": "ok"}, 200
 
     #endpoint for search admin by id
+    @admin_required
     def get(self, id=None):
         qry_admin = Admins.query.filter_by(status=True).filter_by(id=id).first()
 
@@ -45,12 +46,13 @@ class AdminsResource(Resource):
         #check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
+        
         if claims["role"] == "super":
             parser = reqparse.RequestParser()
             parser.add_argument("username", location="form", required=True)
             parser.add_argument("password", location="form", required=True)
             parser.add_argument("full_name", location="form")
-            parser.add_argument("role", location="form", required=True, help='invalid status', choices=('super', 'council', 'academic', 'bussiness'))
+            parser.add_argument("role", location="form", required=True, help='invalid status', choices=('super', 'council', 'academic', 'business'))
             parser.add_argument("email", location="form")
             parser.add_argument("address", location="form")
             parser.add_argument("phone", location="form")
@@ -67,7 +69,7 @@ class AdminsResource(Resource):
                 return {"status": "username must be at least 6 character"}, 404
 
             #check phone number
-            if args['phone'] is not None:
+            if args["phone"] is not None:
                 phone = re.findall("^0[0-9]{7,14}", args["phone"])
                 if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
                     return {"status": "phone number not match"}, 404
@@ -77,11 +79,11 @@ class AdminsResource(Resource):
                 return {"status": "password must be 6 character"}, 404
 
             #check email
-            if args['phone'] is not None:
-                match=re.search("^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", args["email"])
+            if args["email"] is not None:            
+                match=re.search("^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$", args["email"])
                 if match is None:
-                     return {"status": "your input of email is wrong"}, 404
-
+                    return {"status": "your input of email is wrong"}, 404
+                  
             #for status, status used to soft delete
             if args["status"] == "True" or args["status"] == "true":
                 args["status"] = True
@@ -179,6 +181,7 @@ class AdminsResource(Resource):
         return marshal(qry_admin, Admins.response_fields), 200
 
     #endpoint for update field
+    @admin_required
     def patch(self, id):
         qry_admin = Admins.query.filter_by(status=True).filter_by(id=id).first()
         if qry_admin is None:
@@ -221,7 +224,7 @@ class AdminsResource(Resource):
 
         if args['email'] is not None:
             #check email
-            match=re.search("^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", args["email"])
+            match=re.search("^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$", args["email"])
             if match is None:
                 return {"status": "your input of email is wrong"}, 404
             qry_admin.email = args['email']
@@ -314,87 +317,114 @@ class AdminsResource(Resource):
         return marshal(qry_admin, Admins.response_fields), 200
 
     #endpoint for delete admin by id
+    @admin_required
     def delete(self, id):
-        admin = Admins.query.get(id)
-        filename = admin.avatar
+        #check role admin
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
         
-        if admin is not None:
-            if filename is not None:
-                #remove avatar in storage
-                filename = "avatar/"+filename.split("/")[-1]
-                filename = filename.replace("+", " ")
-
-                # S3 Connect
-                s3 = boto3.client(
-                    's3',
-                    aws_access_key_id=app.config["ACCESS_KEY_ID"],
-                    aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
-                )
-
-                s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
+        if claims["role"] == "super":
+            admin = Admins.query.get(id)
+            filename = admin.avatar
             
-            #remove database
-            db.session.delete(admin)
-            db.session.commit()
-            return {"status": "DELETED SUCCESS"}, 200
-        
-        return {"status": "ID NOT FOUND"}, 200
+            if admin is not None:
+                if filename is not None:
+                    #remove avatar in storage
+                    filename = "avatar/"+filename.split("/")[-1]
+                    filename = filename.replace("+", " ")
+
+                    # S3 Connect
+                    s3 = boto3.client(
+                        's3',
+                        aws_access_key_id=app.config["ACCESS_KEY_ID"],
+                        aws_secret_access_key=app.config["ACCESS_SECRET_KEY"]
+                    )
+
+                    s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
+                
+                #remove database
+                db.session.delete(admin)
+                db.session.commit()
+                return {"status": "DELETED SUCCESS"}, 200
+            
+            return {"status": "ID NOT FOUND"}, 200
+
+        else:
+            return {"status": "admin isn't at role super admin"}, 404
 
 
 class AdminsAll(Resource):
     #endpoint to get all and sort by username, full_name and role
+    @admin_required
     def get(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument('p', type=int, location='args', default=1)
-        parser.add_argument('rp', type=int, location='args', default=25)
-        parser.add_argument('orderby', location='args', help='invalid status', choices=("username", "full_name", "role"))
-        parser.add_argument('sort', location='args', help='invalid status', choices=("asc", "desc"))
-        args = parser.parse_args()
+        #check role admin
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        
+        if claims["role"] == "super":
+            parser = reqparse.RequestParser()
+            parser.add_argument('p', type=int, location='args', default=1)
+            parser.add_argument('rp', type=int, location='args', default=25)
+            parser.add_argument('orderby', location='args', help='invalid status', choices=("username", "full_name", "role"))
+            parser.add_argument('sort', location='args', help='invalid status', choices=("asc", "desc"))
+            args = parser.parse_args()
 
-        offset = (args['p'] * args['rp']) - args['rp']
+            offset = (args['p'] * args['rp']) - args['rp']
 
-        qry_admin = Admins.query
+            qry_admin = Admins.query
 
-        if args["orderby"] is not None:
-            if args['orderby'] == "username":
-                if args["sort"] == "desc":
-                    qry_admin = qry_admin.order_by(desc(Admins.username))
-                else:
-                    qry_admin = qry_admin.order_by(Admins.username)
-            elif args["orderby"] == "full_name":
-                if args["sort"] == "desc":
-                    qry_admin = qry_admin.order_by(desc(Admins.full_name))
-                else:
-                    qry_admin = qry_admin.order_by(Admins.full_name)
-            elif args["orderby"] == 'role':
-                if args["sort"] == "desc":
-                    qry_admin = qry_admin.order_by(desc(Admins.role))
-                else:
-                    qry_admin = qry_admin.order_by(Admins.role)
+            if args["orderby"] is not None:
+                if args['orderby'] == "username":
+                    if args["sort"] == "desc":
+                        qry_admin = qry_admin.order_by(desc(Admins.username))
+                    else:
+                        qry_admin = qry_admin.order_by(Admins.username)
+                elif args["orderby"] == "full_name":
+                    if args["sort"] == "desc":
+                        qry_admin = qry_admin.order_by(desc(Admins.full_name))
+                    else:
+                        qry_admin = qry_admin.order_by(Admins.full_name)
+                elif args["orderby"] == 'role':
+                    if args["sort"] == "desc":
+                        qry_admin = qry_admin.order_by(desc(Admins.role))
+                    else:
+                        qry_admin = qry_admin.order_by(Admins.role)
 
-        rows = []
-        for row in qry_admin.limit(args['rp']).offset(offset).all():
-            if row.status == True:
-                row = marshal(row, Admins.response_fields)
-                rows.append(row)
+            rows = []
+            for row in qry_admin.limit(args['rp']).offset(offset).all():
+                if row.status == True:
+                    row = marshal(row, Admins.response_fields)
+                    rows.append(row)
 
-        return rows, 200
+            return rows, 200
+
+        else:
+            return {"status": "admin isn't at role super admin"}, 404
 
 
 class AdminsAllStatus(Resource):
-    #endpoint to get all status of admin 
+    #endpoint to get all status of admin
+    @admin_required
     def get(self):
-        qry_admin = Admins.query
+        #check role admin
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        
+        if claims["role"] == "super":
+            qry_admin = Admins.query
 
-        rows = []
-        for row in qry_admin:
-            row = marshal(row, Admins.response_fields)
-            rows.append(row)
+            rows = []
+            for row in qry_admin:
+                row = marshal(row, Admins.response_fields)
+                rows.append(row)
 
-        if rows == []:
-            return {"status": "data not found"}, 404
+            if rows == []:
+                return {"status": "data not found"}, 404
 
-        return rows, 200
+            return rows, 200
+        
+        else:
+            return {"status": "admin isn't at role super admin"}, 404
 
 api.add_resource(AdminsAll, "")
 api.add_resource(AdminsResource, "", "/<id>")
