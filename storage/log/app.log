@@ -1,0 +1,2 @@
+[2020-06-29 01:50:32,268]{/home/alta13/Documents/Yopi/Github/TugasAkhir/Alta-Online-Learning-BE/blueprints/__init__.py:90} WARNING - REQUEST_LOG	{"method": "GET", "code": "200 OK", "uri": "/?", "request": null, "response": {"status": "Alterra Online Learning 3ANY"}}
+[2020-06-29 01:54:55,644]{/home/alta13/Documents/Yopi/Github/TugasAkhir/Alta-Online-Learning-BE/blueprints/__init__.py:90} WARNING - REQUEST_LOG	{"method": "GET", "code": "200 OK", "uri": "/?", "request": null, "response": {"status": "Alterra Online Learning 3ANY"}}
