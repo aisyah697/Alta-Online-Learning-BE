@@ -1,3 +1,90 @@
-[2020-06-26 17:53:07,047]{/home/alta13/Documents/Yopi/Github/Tugas Akhir/Alta-Online-Learning-BE/blueprints/__init__.py:85} WARNING - REQUEST_LOG	{"method": "POST", "code": "200 OK", "uri": "/auth/mentee?", "request": {"username": "yopiragil", "password": "alta123"}, "response": {"id": 2, "username": "yopiragil", "full_name": "Ahmad Aji Pangestu", "email": "ahmad.ajip@gmail.com", "address": "Klaten", "phone": "08155685", "place_birth": "Klaten", "date_birth": "24 Februari 1996", "avatar": "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/deb8dcead5f54366b951d7b49d316e42_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.jpeg", "background_education": "geoscience", "github": null, "description": "abdiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiuudhiuuhiuhaiuhdiuahdiuahdiuahdiuahdiuhiudhiuwhdiuwhiudhwiuhduwhduwihdiuwhdiuwdiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiuhdiuwhdiuwhduwhdiuwh", "status": true, "created_at": "Fri, 26 Jun 2020 17:37:46 -0000", "update_at": null, "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1OTMxNjg3ODcsIm5iZiI6MTU5MzE2ODc4NywianRpIjoiNzlmNjZiNjUtZDU5OC00N2NhLTgyMzktNDkzZDRlYmExOGQ4IiwiZXhwIjoxNTkzMjU1MTg3LCJpZGVudGl0eSI6InlvcGlyYWdpbCIsImZyZXNoIjpmYWxzZSwidHlwZSI6ImFjY2VzcyIsInVzZXJfY2xhaW1zIjp7ImlkIjoyLCJ1c2VybmFtZSI6InlvcGlyYWdpbCIsInN0YXR1cyI6Im1lbnRlZSJ9fQ.-N69ToFATvUJBYxLrXCBNRdm3l0IckT2vnhzdyuJxG4"}}
-[2020-06-26 20:20:43,805]{/home/alta13/Documents/Yopi/Github/Tugas Akhir/Alta-Online-Learning-BE/blueprints/__init__.py:85} WARNING - REQUEST_LOG	{"method": "OPTIONS", "code": "200 OK", "uri": "/auth/mentee?", "request": null, "response": {}}
-[2020-06-26 20:20:43,847]{/home/alta13/Documents/Yopi/Github/Tugas Akhir/Alta-Online-Learning-BE/blueprints/__init__.py:85} WARNING - REQUEST_LOG	{"method": "POST", "code": "200 OK", "uri": "/auth/mentee?", "request": {"username": "yopiragil", "password": "alta123"}, "response": {"id": 2, "username": "yopiragil", "full_name": "Ahmad Aji Pangestu", "email": "ahmad.ajip@gmail.com", "address": "Klaten", "phone": "08155685", "place_birth": "Klaten", "date_birth": "24 Februari 1996", "avatar": "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/deb8dcead5f54366b951d7b49d316e42_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.jpeg", "background_education": "geoscience", "github": null, "description": "abdiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiuudhiuuhiuhaiuhdiuahdiuahdiuahdiuahdiuhiudhiuwhdiuwhiudhwiuhduwhduwihdiuwhdiuwdiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiudiuwhdiuwhduwhdiuhdiuwhdiuwhduwhdiuwh", "status": true, "created_at": "Fri, 26 Jun 2020 17:37:46 -0000", "update_at": null, "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1OTMxNzc2NDMsIm5iZiI6MTU5MzE3NzY0MywianRpIjoiNDYyNjQ0ZjgtZGY0ZS00Zjc5LTkxYmYtNjc2ODFkMDZhMjAyIiwiZXhwIjoxNTkzMjY0MDQzLCJpZGVudGl0eSI6InlvcGlyYWdpbCIsImZyZXNoIjpmYWxzZSwidHlwZSI6ImFjY2VzcyIsInVzZXJfY2xhaW1zIjp7ImlkIjoyLCJ1c2VybmFtZSI6InlvcGlyYWdpbCIsInN0YXR1cyI6Im1lbnRlZSJ9fQ.VfIGMZPjvKMM7HunZT_GjwpDf2jIcez9D_1GsVopoQs"}}
+[2020-06-26 20:29:34,380]{/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask/app.py:1892} ERROR - Exception on /admin [POST]
+Traceback (most recent call last):
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_restful/__init__.py", line 468, in wrapper
+    resp = resource(*args, **kwargs)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_restful/__init__.py", line 583, in dispatch_request
+    resp = meth(*args, **kwargs)
+  File "/home/alta13/Documents/Yopi/Github/Tugas Akhir/Alta-Online-Learning-BE/blueprints/__init__.py", line 43, in wrapper
+    verify_jwt_in_request()
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_jwt_extended/view_decorators.py", line 32, in verify_jwt_in_request
+    jwt_data, jwt_header = _decode_jwt_from_request(request_type='access')
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_jwt_extended/view_decorators.py", line 294, in _decode_jwt_from_request
+    decoded_token = decode_token(encoded_token, csrf_token)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_jwt_extended/utils.py", line 118, in decode_token
+    allow_expired=allow_expired
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_jwt_extended/tokens.py", line 140, in decode_jwt
+    leeway=leeway, options=options, issuer=issuer)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/jwt/api_jwt.py", line 104, in decode
+    self._validate_claims(payload, merged_options, **kwargs)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/jwt/api_jwt.py", line 134, in _validate_claims
+    self._validate_exp(payload, now, leeway)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/jwt/api_jwt.py", line 175, in _validate_exp
+    raise ExpiredSignatureError('Signature has expired')
+jwt.exceptions.ExpiredSignatureError: Signature has expired
+[2020-06-26 20:29:34,385]{/home/alta13/Documents/Yopi/Github/Tugas Akhir/Alta-Online-Learning-BE/blueprints/__init__.py:98} ERROR - REQUEST_LOG	{"method": "POST", "code": "500 INTERNAL SERVER ERROR", "uri": "/admin?", "request": null, "response": {"message": "Internal Server Error"}}
+[2020-06-26 20:31:05,237]{/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask/app.py:1892} ERROR - Exception on /admin [POST]
+Traceback (most recent call last):
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_restful/__init__.py", line 468, in wrapper
+    resp = resource(*args, **kwargs)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_restful/__init__.py", line 583, in dispatch_request
+    resp = meth(*args, **kwargs)
+  File "/home/alta13/Documents/Yopi/Github/Tugas Akhir/Alta-Online-Learning-BE/blueprints/__init__.py", line 43, in wrapper
+    verify_jwt_in_request()
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_jwt_extended/view_decorators.py", line 32, in verify_jwt_in_request
+    jwt_data, jwt_header = _decode_jwt_from_request(request_type='access')
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_jwt_extended/view_decorators.py", line 294, in _decode_jwt_from_request
+    decoded_token = decode_token(encoded_token, csrf_token)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_jwt_extended/utils.py", line 118, in decode_token
+    allow_expired=allow_expired
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_jwt_extended/tokens.py", line 140, in decode_jwt
+    leeway=leeway, options=options, issuer=issuer)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/jwt/api_jwt.py", line 104, in decode
+    self._validate_claims(payload, merged_options, **kwargs)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/jwt/api_jwt.py", line 134, in _validate_claims
+    self._validate_exp(payload, now, leeway)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/jwt/api_jwt.py", line 175, in _validate_exp
+    raise ExpiredSignatureError('Signature has expired')
+jwt.exceptions.ExpiredSignatureError: Signature has expired
+[2020-06-26 20:31:05,238]{/home/alta13/Documents/Yopi/Github/Tugas Akhir/Alta-Online-Learning-BE/blueprints/__init__.py:98} ERROR - REQUEST_LOG	{"method": "POST", "code": "500 INTERNAL SERVER ERROR", "uri": "/admin?", "request": null, "response": {"message": "Internal Server Error"}}
+[2020-06-26 20:31:52,932]{/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask/app.py:1892} ERROR - Exception on /admin [POST]
+Traceback (most recent call last):
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_restful/__init__.py", line 468, in wrapper
+    resp = resource(*args, **kwargs)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_restful/__init__.py", line 583, in dispatch_request
+    resp = meth(*args, **kwargs)
+  File "/home/alta13/Documents/Yopi/Github/Tugas Akhir/Alta-Online-Learning-BE/blueprints/__init__.py", line 43, in wrapper
+    verify_jwt_in_request()
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_jwt_extended/view_decorators.py", line 32, in verify_jwt_in_request
+    jwt_data, jwt_header = _decode_jwt_from_request(request_type='access')
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_jwt_extended/view_decorators.py", line 294, in _decode_jwt_from_request
+    decoded_token = decode_token(encoded_token, csrf_token)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_jwt_extended/utils.py", line 118, in decode_token
+    allow_expired=allow_expired
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/flask_jwt_extended/tokens.py", line 140, in decode_jwt
+    leeway=leeway, options=options, issuer=issuer)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/jwt/api_jwt.py", line 104, in decode
+    self._validate_claims(payload, merged_options, **kwargs)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/jwt/api_jwt.py", line 134, in _validate_claims
+    self._validate_exp(payload, now, leeway)
+  File "/home/alta13/Documents/Yopi/virtual/lib/python3.6/site-packages/jwt/api_jwt.py", line 175, in _validate_exp
+    raise ExpiredSignatureError('Signature has expired')
+jwt.exceptions.ExpiredSignatureError: Signature has expired
+[2020-06-26 20:31:52,934]{/home/alta13/Documents/Yopi/Github/Tugas Akhir/Alta-Online-Learning-BE/blueprints/__init__.py:98} ERROR - REQUEST_LOG	{"method": "POST", "code": "500 INTERNAL SERVER ERROR", "uri": "/admin?", "request": null, "response": {"message": "Internal Server Error"}}
