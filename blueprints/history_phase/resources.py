@@ -62,16 +62,24 @@ class HistoriesPhaseResource(Resource):
         if qry_phase is None:
             return {"status": "ID Phase is Not Found"}, 404
 
+        #check input score
+        if args["score"] is None:
+            score = None
+
         #Make number certificate
-        if int(args["score"]) >= 80:
-            encoded = uuid.uuid4().hex
+        if args["score"] is not None:
+            if int(args["score"]) >= 80 and args["score"] is not None:
+                encoded = uuid.uuid4().hex
+            else:
+                encoded = None
         else:
+            score = None
             encoded = None
 
         result = HistoriesPhase(
             args["phase_id"],
             args["mentee_id"],
-            args["score"],
+            score,
             encoded,
             args["status"]
         )
