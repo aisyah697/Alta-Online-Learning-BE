@@ -55,8 +55,11 @@ class QuestionsQuizResource(Resource):
         parser.add_argument("status", location="json", type=bool, default=True)
         args = parser.parse_args()
 
-        qry_quiz = Quizs.query.get(args["quiz_id"])
-        quiz = marshal(qry_quiz, Quizs.response_fields)
+        #check quiz_id
+        quiz_id = Quizs.query.get(args["quiz_id"])
+
+        if quiz_id is None:
+            return {"status": "Quiz isn't in database"}, 404
 
         result = QuestionsQuiz(
             args["quiz_id"],
