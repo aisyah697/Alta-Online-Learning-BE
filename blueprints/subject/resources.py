@@ -32,7 +32,7 @@ class SubjectsResource(Resource):
         if qry_subject is not None:
             return marshal(qry_subject, Subjects.response_fields), 200
         
-        return {"status": "Id Subject not found"}, 404
+        return {"status": "Id Mentee not found"}, 404
 
     #endpoint for post subject
     def post(self):
@@ -62,7 +62,7 @@ class SubjectsResource(Resource):
         #check id in query or not
         qry_subject = Subjects.query.get(id)
         if qry_subject is None:
-            return {'status': 'Subject is NOT_FOUND'}, 404
+            return {'status': 'Mentee is NOT_FOUND'}, 404
 
         #input update status 
         parser = reqparse.RequestParser()
@@ -81,7 +81,7 @@ class SubjectsResource(Resource):
         #check id in querry or not
         qry_subject = Subjects.query.filter_by(status=True).filter_by(id=id).first()
         if qry_subject is None:
-            return {'status': 'Subject is NOT_FOUND'}, 404
+            return {'status': 'Mentee is NOT_FOUND'}, 404
 
         parser = reqparse.RequestParser()
         parser.add_argument("name", location="json")
