@@ -13,6 +13,7 @@ from sqlalchemy import desc
 # )
 
 from .model import Quizs
+from ..exam.model import Exams
 
 bp_quiz = Blueprint("quiz", __name__)
 api = Api(bp_quiz)
@@ -43,10 +44,17 @@ class QuizsResource(Resource):
         parser.add_argument("status", location="json", type=bool, default=True)
         args = parser.parse_args()
 
-        quiz_exam = Quizs.query.filter_by(exam_id=args["exam_id"]).first()
+        #check exam_id
+        exam_id = Exams.query.get(args["exam_id"])
 
-        if quiz_exam is not None:
-            return {"status": "Exam is already there for this subject"}
+        if exam_id is None:
+            return {"status": "Exam isn't in database"}, 404
+
+        #Check there no same exam_id
+        exam_id_quiz = Quizs.query.filter_by(exam_id=args["exam_id"]).first()
+        
+        if exam_id_quiz is not None:
+            return {"status": "Quiz for this exam is already there"}, 404
 
         result = Quizs(
             args["exam_id"],

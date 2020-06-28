@@ -28,7 +28,8 @@ jwt = JWTManager(app)
 
 @app.route('/')
 def hello():
-    return {'status': 'thanks yopi, aji, aisyah'}, 200
+
+    return {'status': 'Alterra Online Learning 3ANY'}, 200
 
 def mentee_required(fn):
     @wraps(fn)

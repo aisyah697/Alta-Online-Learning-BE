@@ -5,14 +5,14 @@ from flask import Blueprint
 from flask_restful import Resource, Api, reqparse, marshal, inputs
 from blueprints import db, app
 from sqlalchemy import desc
-import hashlib, uuid
 from flask_jwt_extended import (
     JWTManager,
-    create_access_token,
     get_jwt_identity,
+    verify_jwt_in_request,
     jwt_required,
     get_jwt_claims,
 )
+from blueprints import mentee_required
 from  sqlalchemy.sql.expression import func, select
 
 from .model import Altatests
@@ -55,6 +55,7 @@ class AltatestsResource(Resource):
         return {"status": "Id Altatests not found"}, 404
 
     #endpoint post altatest
+    @mentee_required
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool, default=True)
@@ -118,6 +119,7 @@ class AltatestsResource(Resource):
         return marshal(qry_altatest, Altatests.response_fields), 200
 
     #Endpoint delete Altatest by Id
+    @mentee_required
     def delete(self, id):
         qry_altatest = Altatests.query.get(id)
 
@@ -131,6 +133,10 @@ class AltatestsResource(Resource):
 
 
 class AltatestAll(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+
     #endpoint to get all and sort by choice and created_at
     def get(self):
         parser = reqparse.RequestParser()
@@ -166,6 +172,10 @@ class AltatestAll(Resource):
 
 
 class AltatestAllStatus(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+    
     #endpoint to get all status of altatest 
     def get(self):
         qry_altatest = Altatests.query
