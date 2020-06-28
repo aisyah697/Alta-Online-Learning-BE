@@ -19,10 +19,13 @@ from blueprints import admin_required
 import boto3
 
 from .model import Modules
+from ..phase.model import Phases
+from ..admin.model import Admins
 from ..subject.model import Subjects
 from ..requirement_module.model import RequirementsModule
 from ..file_subject.model import FilesSubject
 from ..exam.model import Exams
+from ..quiz.model import Quizs
 from ..question_quiz.model import QuestionsQuiz
 from ..choice_quiz.model import ChoicesQuiz
 
@@ -70,12 +73,24 @@ class ModulesResource(Resource):
             parser.add_argument("status", location="form", default="True")
             args = parser.parse_args()
 
+            #check phase_id
+            phase_id = Phases.query.get(args["phase_id"])
+
+            if phase_id is None:
+                return {"status": "Phase isn't in database"}, 404
+
+            #check admin_id
+            admin_id = Admins.query.get(args["admin_id"])
+
+            if admin_id is None:
+                return {"status": "Admin isn't in database"}, 404
+
             #for status, status used to soft delete 
             if args["status"] == "True" or args["status"] == "true":
                 args["status"] = True
             elif args["status"] == "False" or args["status"] == "false":
                 args["status"] = False
-
+            
             #for upload image in storage
             module_image = args["image"]
 
@@ -345,23 +360,82 @@ class ModuleNestedById(Resource):
         claims = get_jwt_claims()
         
         if claims["role"] == "super" or claims["role"] == "academic":
+            #Module
             qry_module = Modules.query.get(id)
             
             if qry_module is not None and qry_module.status == True:
                 module = marshal(qry_module, Modules.response_fields)
 
                 if claims["id"] == module["admin_id"] or claims["role"] == "super":
+                   #Subject
                     qry_subject = Subjects.query.filter_by(module_id=module["id"]).all()
                     
                     subjects = []
                     for subject in qry_subject:
                         if subject.status == True:
                             subject = marshal(subject, Subjects.response_fields)
-                            qry_file_subject = FilesSubject.query.filter_by(subject_id)
+                            #File Subject
+                            qry_file_subject = FilesSubject.query.filter_by(subject_id=subject["id"]).all()
                             
+                            videos = []
+                            presentations = []
+                            for file_subject in qry_file_subject:
+                                if file_subject.status == True:
+                                    if file_subject.category_file == "video":
+                                        file_subject = marshal(file_subject, FilesSubject.response_fields)
+                                        videos.append(file_subject)
+                                    elif file_subject.category_file == "presentation":
+                                        file_subject = marshal(file_subject, FilesSubject.response_fields)
+                                        presentations.append(file_subject)
+
+                            subject["video"] = videos
+                            subject["presentation"] = presentations
+
+                            #exam
+                            qry_exam = Exams.query.filter_by(status=True).filter_by(subject_id=subject["id"]).first()
+                            exams = [marshal(qry_exam, Exams.response_fields)]
+                            
+                            #quiz
+                            qry_quiz = Quizs.query.filter_by(status=True).filter_by(exam_id=exams[0]["id"]).first()
+                            quizs = [marshal(qry_quiz, Quizs.response_fields)]
+
+                            #question
+                            qry_question = QuestionsQuiz.query.filter_by(quiz_id=quizs[0]["id"]).all()
+                            questions = []
+                            for question in qry_question:
+                                if question.status == True:
+                                    question = marshal(question, QuestionsQuiz.response_fields)
+                                    
+                                    qry_choice = ChoicesQuiz.query.filter_by(question_id=question["id"])
+                                    choices = []
+                                    for choice in qry_choice:
+                                        if choice.status == True:
+                                            choice = marshal(choice, ChoicesQuiz.response_fields)
+                                            choices.append(choice)
+                                    
+                                    question["choice"] = choices
+                                    
+                                    questions.append(question)
+
+                            quizs[0]["question"] = questions
+
+                            exams[0]["quiz"] = quizs
+
+                            subject["exam"] = exams
+
                             subjects.append(subject)
+                    
+                    #requirement
+                    qry_requirement = RequirementsModule.query.filter_by(module_id=module["id"]).all()
+
+                    requirements = []
+                    for requirement in qry_requirement:
+                        if requirement.status == True:
+                            requirement = marshal(requirement, RequirementsModule.response_fields)
+                            requirements.append(requirement)
 
                     module["subject"] = subjects
+                    module["requirement"] = requirements
                 
                 else:
                     return {"status": "admin isn't permission to access this module"}, 404
@@ -375,7 +449,7 @@ class ModuleNestedById(Resource):
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
 
-class PhaseNestedAll(Resource):
+class ModuleNestedAll(Resource):
     #endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
@@ -395,47 +469,96 @@ class PhaseNestedAll(Resource):
 
             offset = (args['p'] * args['rp']) - args['rp']
 
-            qry_phase = Phases.query
+            qry_module = Modules.query
 
             if args["orderby"] is not None:
                 if args['orderby'] == "id":
                     if args["sort"] == "desc":
-                        qry_phase = qry_phase.order_by(desc(Phases.id))
+                        qry_module = qry_module.order_by(desc(Modules.id))
                     else:
-                        qry_phase = qry_phase.order_by(Phases.id)
+                        qry_module = qry_module.order_by(Modules.id)
                 elif args["orderby"] == "created_at":
                     if args["sort"] == "desc":
-                        qry_phase = qry_phase.order_by(desc(Phases.created_at))
+                        qry_module = qry_module.order_by(desc(Modules.created_at))
                     else:
-                        qry_phase = qry_phase.order_by(Phases.created_at)
+                        qry_module = qry_module.order_by(Modules.created_at)
 
-            phases = []
-            for phase in qry_phase.limit(args['rp']).offset(offset).all():
-                if phase.status == True:
-                    phase = marshal(phase, Phases.response_fields)
+            modules = []
+            for module in qry_module.limit(args['rp']).offset(offset).all():
+                if module.status == True and (module.admin_id == claims["id"] or claims["role"] == "super"):
+                    module = marshal(module, Modules.response_fields)
 
-                    qry_module = Modules.query.filter_by(phase_id=phase["id"]).all()
-                    modules = []
-                    for module in qry_module:
-                        if module.status == True and (module.admin_id == claims["id"] or claims["role"] == "super"):
-                            module = marshal(module, Modules.response_fields)
+                    qry_subject = Subjects.query.filter_by(module_id=module["id"]).all()    
+                    subjects = []
+                    for subject in qry_subject:
+                        if subject.status == True:
+                            subject = marshal(subject, Subjects.response_fields)
+                            #File Subject
+                            qry_file_subject = FilesSubject.query.filter_by(subject_id=subject["id"]).all()
+                            
+                            videos = []
+                            presentations = []
+                            for file_subject in qry_file_subject:
+                                if file_subject.status == True:
+                                    if file_subject.category_file == "video":
+                                        file_subject = marshal(file_subject, FilesSubject.response_fields)
+                                        videos.append(file_subject)
+                                    elif file_subject.category_file == "presentation":
+                                        file_subject = marshal(file_subject, FilesSubject.response_fields)
+                                        presentations.append(file_subject)
 
-                            qry_subject = Subjects.query.filter_by(module_id=module["id"]).all()
-                            subjects = []
-                            for subject in qry_subject:
-                                if subject.status == True:
-                                    subject = marshal(subject, Subjects.response_fields)
-                                    subjects.append(subject)
+                            subject["video"] = videos
+                            subject["presentation"] = presentations
 
-                            module["subject"] = subjects
+                            #exam
+                            qry_exam = Exams.query.filter_by(status=True).filter_by(subject_id=subject["id"]).first()
+                            exams = [marshal(qry_exam, Exams.response_fields)]
+                            
+                            #quiz
+                            qry_quiz = Quizs.query.filter_by(status=True).filter_by(exam_id=exams[0]["id"]).first()
+                            quizs = [marshal(qry_quiz, Quizs.response_fields)]
 
-                            modules.append(module)
+                            #question
+                            qry_question = QuestionsQuiz.query.filter_by(quiz_id=quizs[0]["id"]).all()
+                            questions = []
+                            for question in qry_question:
+                                if question.status == True:
+                                    question = marshal(question, QuestionsQuiz.response_fields)
+                                    
+                                    qry_choice = ChoicesQuiz.query.filter_by(question_id=question["id"])
+                                    choices = []
+                                    for choice in qry_choice:
+                                        if choice.status == True:
+                                            choice = marshal(choice, ChoicesQuiz.response_fields)
+                                            choices.append(choice)
+                                    
+                                    question["choice"] = choices
+                                    
+                                    questions.append(question)
+
+                            quizs[0]["question"] = questions
+
+                            exams[0]["quiz"] = quizs
+
+                            subject["exam"] = exams
+
+                            subjects.append(subject)
                     
-                    phase["module"] = modules
+                    #requirement
+                    qry_requirement = RequirementsModule.query.filter_by(module_id=module["id"]).all()
 
-                    phases.append(phase)
-            
-            return phases, 200
+                    requirements = []
+                    for requirement in qry_requirement:
+                        if requirement.status == True:
+                            requirement = marshal(requirement, RequirementsModule.response_fields)
+                            requirements.append(requirement)
+
+                    module["subject"] = subjects
+                    module["requirement"] = requirements
+
+                    modules.append(module)
+
+            return modules, 200
 
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
@@ -463,4 +586,5 @@ class ModulesAllStatus(Resource):
 api.add_resource(ModulesAll, "")
 api.add_resource(ModulesResource, "", "/<id>")
 api.add_resource(ModuleNestedById, "", "/nested/<id>")
+api.add_resource(ModuleNestedAll, "", "/nested")
 api.add_resource(ModulesAllStatus, "", "/all")

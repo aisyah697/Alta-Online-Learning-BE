@@ -30,7 +30,6 @@ class AltatestsResource(Resource):
         return {"status": "ok"}, 200
 
     #endpoint for search altatest by id
-    @mentee_required
     def get(self, id=None):
         qry_altatest = Altatests.query.filter_by(status=True).filter_by(id=id).first()
 

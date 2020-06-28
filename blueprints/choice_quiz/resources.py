@@ -46,7 +46,6 @@ class ChoicesQuizResource(Resource):
         args = parser.parse_args()
 
         qry_question_quiz = QuestionsQuiz.query.get(args["question_id"])
-        question_quiz = marshal(qry_question_quiz, QuestionsQuiz.response_fields)
         if qry_question_quiz is None:
             return {"status": "Question for this choice is Not Found"}, 404
 
