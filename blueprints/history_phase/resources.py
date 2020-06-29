@@ -67,10 +67,6 @@ class HistoriesPhaseResource(Resource):
         if qry_phase is None:
             return {"status": "ID Phase is Not Found"}, 404
 
-        #check input score
-        # if args["score"] is None:
-        #     score = None
-
         #Make number certificate
         if args["score"] is not None:
             if args["score"] >= 80 and args["score"] is not None:

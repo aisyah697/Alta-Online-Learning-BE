@@ -3,21 +3,29 @@ import os
 import werkzeug
 from flask import Blueprint
 from flask_restful import Resource, Api, reqparse, marshal, inputs
-
 from blueprints import db, app
 from sqlalchemy import desc
-# import hashlib, uuid 
-# from flask_jwt_extended import (
-#     JWTManager,
-#     create_access_token,
-#     get_jwt_identity,
-#     jwt_required,
-#     get_jwt_claims,
-# )
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token,
+    get_jwt_identity,
+    verify_jwt_in_request,
+    jwt_required,
+    get_jwt_claims,
+)
+from blueprints import mentee_required
 
 from .model import HistoriesModule
+from ..admin.model import Admins
 from ..mentee.model import Mentees
+from ..phase.model import Phases
 from ..module.model import Modules
+from ..subject.model import Subjects
+from ..file_subject.model import FilesSubject
+from ..exam.model import Exams
+from ..quiz.model import Quizs
+from ..question_quiz.model import QuestionsQuiz
+from ..choice_quiz.model import ChoicesQuiz
 
 bp_history_module = Blueprint("history_module", __name__)
 api = Api(bp_history_module)
@@ -38,6 +46,7 @@ class HistoriesModuleResource(Resource):
         return {"status": "Id history module not found"}, 404
 
     #endpoint for post history module
+    @mentee_required
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument("module_id", location="json", required=True)
@@ -172,6 +181,257 @@ class HistoriesModuleAll(Resource):
         return rows, 200
 
 
+class HistoriesModuleMentee(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+
+    #endpoint to show all module per masing-masing mentee
+    @mentee_required
+    def get(self):
+        #get id mentee
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        mentee_id = claims["id"]
+
+        #get history module mentee
+        qry_history_module = HistoriesModule.query.filter_by(status=True).filter_by(mentee_id=mentee_id).all()
+        
+        histories_module = []
+        for history_module in qry_history_module:
+            history_module = marshal(history_module, HistoriesModule.response_fields)
+
+            #get module in database
+            qry_module = Modules.query.filter_by(status=True).filter_by(id=history_module["module_id"]).first()
+            module = marshal(qry_module, Modules.response_fields)
+
+            #get admin in database
+            qry_admin = Admins.query.get(module["admin_id"])
+            admin = marshal(qry_admin, Admins.response_fields)
+
+            #input admin in object module
+            module["admin"] = admin
+
+            #input module in object history module
+            history_module["module"] = module
+
+            #get subject in database
+            qry_subject = Subjects.query.filter_by(status=True).filter_by(module_id=module["id"]).all()
+            subjects = []
+            for subject in qry_subject:
+                subject = marshal(subject, Subjects.response_fields)
+
+                #get file_subject in database
+                qry_file_subject = FilesSubject.query.filter_by(status=True).filter_by(subject_id=subject["id"]).order_by(FilesSubject.category_file).all()
+                files_subject = []
+                for file_subject in qry_file_subject:
+                    file_subject = marshal(file_subject, FilesSubject.response_fields)
+
+                    files_subject.append(file_subject)
+
+                #input file_subject in object subject
+                subject["file_subject"] = files_subject
+
+                #exam
+                qry_exam = Exams.query.filter_by(status=True).filter_by(subject_id=subject["id"]).first()
+                exams = [marshal(qry_exam, Exams.response_fields)]
+                
+                #quiz
+                qry_quiz = Quizs.query.filter_by(status=True).filter_by(exam_id=exams[0]["id"]).first()
+                quizs = [marshal(qry_quiz, Quizs.response_fields)]
+
+                #question
+                qry_question = QuestionsQuiz.query.filter_by(status=True).filter_by(quiz_id=quizs[0]["id"]).all()
+                questions = []
+                for question in qry_question:
+                    if question.status == True:
+                        question = marshal(question, QuestionsQuiz.response_fields)
+                        
+                        qry_choice = ChoicesQuiz.query.filter_by(status=True).filter_by(question_id=question["id"])
+                        choices = []
+                        for choice in qry_choice:
+                            if choice.status == True:
+                                choice = marshal(choice, ChoicesQuiz.response_fields)
+                                choices.append(choice)
+                        
+                        question["choice"] = choices
+                        
+                        questions.append(question)
+
+                if qry_question is not None:
+                    quizs[0]["question"] = questions
+                else:
+                    quizs[0]["question"] = []
+
+                if qry_quiz is not None:
+                    exams[0]["quiz"] = quizs
+                else:
+                    exams[0]["quiz"] = []
+
+                if qry_quiz is not None:
+                    subject["exam"] = exams
+                else:
+                    subject["exam"] = []
+            
+                subjects.append(subject)
+
+            #input subject in object history module
+            history_module["subject"] = subjects
+
+            histories_module.append(history_module)
+
+        return histories_module, 200
+
+    #endpoint when register to post module per masing-masing mentee
+    @mentee_required
+    def post(self):
+        #get id mentee
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        
+        qry_history_module = HistoriesModule.query.filter_by(mentee_id=claims["id"]).first()
+
+        if qry_history_module is None:
+            modules = Modules.query
+
+            history_modules = []
+            for index, module in enumerate(modules):
+                score = None
+                is_complete = False
+                
+                if index == 0:
+                    lock_key = True
+                else:
+                    lock_key = False
+                
+                status = True
+                
+                result = HistoriesModule(
+                    module.id,
+                    claims["id"],
+                    score,
+                    is_complete,
+                    lock_key,
+                    status
+                )
+
+                db.session.add(result)
+                db.session.commit()
+
+                result = marshal(result, HistoriesModule.response_fields)
+                history_modules.append(result)
+
+            return history_modules, 200
+        
+        else:
+            return {"status": "Mentee is already take the course"}, 404
+
+
+class HistoriesModuleByIdPhase(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+
+    #endpoint to show module per masing-masing mentee by id phase
+    @mentee_required
+    def get(self, id=None):
+        #get id mentee
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        mentee_id = claims["id"]
+
+        #get history module mentee
+        qry_history_module = HistoriesModule.query.filter_by(status=True).filter_by(mentee_id=mentee_id).all()
+        
+        phase_id = int(id)
+
+        histories_module = []
+        for history_module in qry_history_module:
+            history_module = marshal(history_module, HistoriesModule.response_fields)
+
+            #get module in database
+            qry_module = Modules.query.filter_by(status=True).filter_by(id=history_module["module_id"]).first()
+            module = marshal(qry_module, Modules.response_fields)
+
+            if module["phase_id"] == phase_id:
+                #get admin in database
+                qry_admin = Admins.query.get(module["admin_id"])
+                admin = marshal(qry_admin, Admins.response_fields)
+
+                #input admin in object module
+                module["admin"] = admin
+
+                #input module in object history module
+                history_module["module"] = module
+
+                #get subject in database
+                qry_subject = Subjects.query.filter_by(status=True).filter_by(module_id=module["id"]).all()
+                subjects = []
+                for subject in qry_subject:
+                    subject = marshal(subject, Subjects.response_fields)
+
+                    #get file_subject in database
+                    qry_file_subject = FilesSubject.query.filter_by(status=True).filter_by(subject_id=subject["id"]).order_by(FilesSubject.category_file).all()
+                    files_subject = []
+                    for file_subject in qry_file_subject:
+                        file_subject = marshal(file_subject, FilesSubject.response_fields)
+
+                        files_subject.append(file_subject)
+
+                    #input file_subject in object subject
+                    subject["file_subject"] = files_subject
+
+                    #exam
+                    qry_exam = Exams.query.filter_by(status=True).filter_by(subject_id=subject["id"]).first()
+                    exams = [marshal(qry_exam, Exams.response_fields)]
+                    
+                    #quiz
+                    qry_quiz = Quizs.query.filter_by(status=True).filter_by(exam_id=exams[0]["id"]).first()
+                    quizs = [marshal(qry_quiz, Quizs.response_fields)]
+
+                    #question
+                    qry_question = QuestionsQuiz.query.filter_by(status=True).filter_by(quiz_id=quizs[0]["id"]).all()
+                    questions = []
+                    for question in qry_question:
+                        if question.status == True:
+                            question = marshal(question, QuestionsQuiz.response_fields)
+                            
+                            qry_choice = ChoicesQuiz.query.filter_by(status=True).filter_by(question_id=question["id"])
+                            choices = []
+                            for choice in qry_choice:
+                                if choice.status == True:
+                                    choice = marshal(choice, ChoicesQuiz.response_fields)
+                                    choices.append(choice)
+                            
+                            question["choice"] = choices
+                            
+                            questions.append(question)
+
+                    if qry_question is not None:
+                        quizs[0]["question"] = questions
+                    else:
+                        quizs[0]["question"] = []
+
+                    if qry_quiz is not None:
+                        exams[0]["quiz"] = quizs
+                    else:
+                        exams[0]["quiz"] = []
+
+                    if qry_quiz is not None:
+                        subject["exam"] = exams
+                    else:
+                        subject["exam"] = []
+                
+                    subjects.append(subject)
+
+                #input subject in object history module
+                history_module["subject"] = subjects
+
+                histories_module.append(history_module)
+
+        return histories_module, 200
+
+
 class HistoriesModuleAllStatus(Resource):
     #endpoint to get all status of history subject
     def get(self):
@@ -190,3 +450,5 @@ class HistoriesModuleAllStatus(Resource):
 api.add_resource(HistoriesModuleAll, "")
 api.add_resource(HistoriesModuleResource, "", "/<id>")
 api.add_resource(HistoriesModuleAllStatus, "", "/all")
+api.add_resource(HistoriesModuleMentee, "", "/mentee")
+api.add_resource(HistoriesModuleByIdPhase, "", "/subject/<id>")
