@@ -367,7 +367,12 @@ class ModuleNestedById(Resource):
                 module = marshal(qry_module, Modules.response_fields)
 
                 if claims["id"] == module["admin_id"] or claims["role"] == "super":
-                   #Subject
+                    #admin
+                    qry_admin = Admins.query.filter_by(id=module["admin_id"]).first()
+                    admin = marshal(qry_admin, Admins.response_fields)
+                    module["admin"] = admin
+
+                    #Subject
                     qry_subject = Subjects.query.filter_by(module_id=module["id"]).all()
                     
                     subjects = []
@@ -487,6 +492,11 @@ class ModuleNestedAll(Resource):
             for module in qry_module.limit(args['rp']).offset(offset).all():
                 if module.status == True and (module.admin_id == claims["id"] or claims["role"] == "super"):
                     module = marshal(module, Modules.response_fields)
+
+                    #admin
+                    qry_admin = Admins.query.filter_by(id=module["admin_id"]).first()
+                    admin = marshal(qry_admin, Admins.response_fields)
+                    module["admin"] = admin
 
                     qry_subject = Subjects.query.filter_by(module_id=module["id"]).all()    
                     subjects = []
