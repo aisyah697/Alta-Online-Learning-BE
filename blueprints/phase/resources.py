@@ -313,7 +313,6 @@ class PhasesAllStatus(Resource):
         return {"status": "ok"}, 200
 
     #endpoint to get all status of choice 
-    @admin_required
     def get(self):
         qry_phase = Phases.query
 

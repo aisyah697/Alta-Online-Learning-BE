@@ -3,21 +3,24 @@ import os
 import werkzeug
 from flask import Blueprint
 from flask_restful import Resource, Api, reqparse, marshal, inputs
-
 from blueprints import db, app
 from sqlalchemy import desc
 import hashlib, uuid 
-# from flask_jwt_extended import (
-#     JWTManager,
-#     create_access_token,
-#     get_jwt_identity,
-#     jwt_required,
-#     get_jwt_claims,
-# )
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token,
+    get_jwt_identity,
+    verify_jwt_in_request,
+    jwt_required,
+    get_jwt_claims,
+)
+from blueprints import mentee_required
 
 from .model import HistoriesPhase
 from ..mentee.model import Mentees
 from ..phase.model import Phases
+from ..module.model import Modules
+from ..subject.model import Subjects
 
 bp_history_phase = Blueprint("history_phase", __name__)
 api = Api(bp_history_phase)
@@ -38,12 +41,14 @@ class HistoriesPhaseResource(Resource):
         return {"status": "Id history phase not found"}, 404
 
     #endpoint for post history phase
+    @mentee_required
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument("phase_id", location="json", required=True)
         parser.add_argument("mentee_id", location="json", required=True)
         parser.add_argument("score", location="json")
         parser.add_argument("certificate", location="json")
+        parser.add_argument("lock_key", location="json", type=bool, default=False)
         parser.add_argument("status", location="json", type=bool, default=True)
         args = parser.parse_args()
 
@@ -81,6 +86,7 @@ class HistoriesPhaseResource(Resource):
             args["mentee_id"],
             score,
             encoded,
+            args["lock_key"],
             args["status"]
         )
 
@@ -158,6 +164,10 @@ class HistoriesPhaseResource(Resource):
 
 
 class HistoriesPhaseAll(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+
     #endpoint to get all and sort by score and created at
     def get(self):
         parser = reqparse.RequestParser()
@@ -192,7 +202,78 @@ class HistoriesPhaseAll(Resource):
         return rows, 200
 
 
+class HistoriesPhaseMentee(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+
+    #endpoint to show all phase per masing-masing mentee
+    @mentee_required
+    def get(self):
+        #get id mentee
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        mentee_id = claims["id"]
+
+        #get history phase mentee
+        qry_history_phase = HistoriesPhase.query.filter_by(mentee_id=mentee_id).all()
+
+        histories_phase = []
+        for history_phase in qry_history_phase:
+            history_phase = marshal(history_phase, history_phase.response_fields)
+            #get phase in database
+            qry_phase = Phases.query.filter_by(id=history_phase["phase_id"]).first()
+            phase = marshal(qry_phase, Phases.response_fields)
+            #input phase in object history phase
+            history_phase["phase"] = phase
+            histories_phase.append(history_phase)
+
+        return histories_phase, 200
+
+    #endpoint when login to post phase per masing-masing mentee
+    @mentee_required
+    def post(self):
+        #get id mentee
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+
+        phases = Phases.query
+
+        history_phases = []
+        for index, phase in enumerate(phases):
+            score = None
+            certificate = None
+            
+            if index == 0:
+                lock_key = True
+            else:
+                lock_key = False
+            
+            status = True
+            
+            result = HistoriesPhase(
+                phase.id,
+                claims["id"],
+                score,
+                certificate,
+                lock_key,
+                status
+            )
+
+            db.session.add(result)
+            db.session.commit()
+
+            result = marshal(result, HistoriesPhase.response_fields)
+            history_phases.append(result)
+
+        return history_phases, 200
+
+
 class HistoriesPhaseAllStatus(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+
     #endpoint to get all status of history phase
     def get(self):
         qry_history_phase = HistoriesPhase.query
@@ -210,3 +291,4 @@ class HistoriesPhaseAllStatus(Resource):
 api.add_resource(HistoriesPhaseAll, "")
 api.add_resource(HistoriesPhaseResource, "", "/<id>")
 api.add_resource(HistoriesPhaseAllStatus, "", "/all")
+api.add_resource(HistoriesPhaseMentee, "", "/mentee")
