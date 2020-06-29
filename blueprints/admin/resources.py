@@ -412,27 +412,18 @@ class AdminsAll(Resource):
 
 class AdminsAllStatus(Resource):
     #endpoint to get all status of admin
-    @admin_required
     def get(self):
-        #check role admin
-        verify_jwt_in_request()
-        claims = get_jwt_claims()
-        
-        if claims["role"] == "super":
-            qry_admin = Admins.query
+        qry_admin = Admins.query
 
-            rows = []
-            for row in qry_admin:
-                row = marshal(row, Admins.response_fields)
-                rows.append(row)
+        rows = []
+        for row in qry_admin:
+            row = marshal(row, Admins.response_fields)
+            rows.append(row)
 
-            if rows == []:
-                return {"status": "data not found"}, 404
+        if rows == []:
+            return {"status": "data not found"}, 404
 
-            return rows, 200
-        
-        else:
-            return {"status": "admin isn't at role super admin"}, 404
+        return rows, 200
 
 api.add_resource(AdminsAll, "")
 api.add_resource(AdminsResource, "", "/<id>")

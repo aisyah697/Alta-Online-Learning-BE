@@ -389,7 +389,6 @@ class MenteesAllStatus(Resource):
         return {"status": "ok"}, 200
         
     #endpoint to get all status of mentee 
-    @admin_required
     def get(self):
         qry_mentee = Mentees.query
 
