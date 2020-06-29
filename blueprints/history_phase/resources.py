@@ -236,38 +236,43 @@ class HistoriesPhaseMentee(Resource):
         #get id mentee
         verify_jwt_in_request()
         claims = get_jwt_claims()
+        
+        qry_history_phase = HistoriesPhase.query.filter_by(mentee_id=claims["id"]).first()
 
-        phases = Phases.query
+        if qry_history_phase is None:
+            phases = Phases.query
 
-        history_phases = []
-        for index, phase in enumerate(phases):
-            score = None
-            certificate = None
-            
-            if index == 0:
-                lock_key = True
-            else:
-                lock_key = False
-            
-            status = True
-            
-            result = HistoriesPhase(
-                phase.id,
-                claims["id"],
-                score,
-                certificate,
-                lock_key,
-                status
-            )
+            history_phases = []
+            for index, phase in enumerate(phases):
+                score = None
+                certificate = None
+                
+                if index == 0:
+                    lock_key = True
+                else:
+                    lock_key = False
+                
+                status = True
+                
+                result = HistoriesPhase(
+                    phase.id,
+                    claims["id"],
+                    score,
+                    certificate,
+                    lock_key,
+                    status
+                )
 
-            db.session.add(result)
-            db.session.commit()
+                db.session.add(result)
+                db.session.commit()
 
-            result = marshal(result, HistoriesPhase.response_fields)
-            history_phases.append(result)
+                result = marshal(result, HistoriesPhase.response_fields)
+                history_phases.append(result)
 
-        return history_phases, 200
-
+            return history_phases, 200
+        
+        else:
+            return {"status": "Mentee is already take the course"}, 404
 
 class HistoriesPhaseAllStatus(Resource):
     #for solve cors
