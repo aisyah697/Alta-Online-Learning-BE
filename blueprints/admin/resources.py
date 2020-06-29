@@ -405,8 +405,9 @@ class AdminsAll(Resource):
                 if row.status == True:
                     row = marshal(row, Admins.response_fields)
                     rows.append(row)
-            return rows, 200
-                     
+                    
+            return rows
+                    
         else:
             return {"status": "admin isn't at role super admin"}, 404
 
