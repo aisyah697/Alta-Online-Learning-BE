@@ -68,12 +68,12 @@ class HistoriesPhaseResource(Resource):
             return {"status": "ID Phase is Not Found"}, 404
 
         #check input score
-        if args["score"] is None:
-            score = None
+        # if args["score"] is None:
+        #     score = None
 
         #Make number certificate
         if args["score"] is not None:
-            if int(args["score"]) >= 80 and args["score"] is not None:
+            if args["score"] >= 80 and args["score"] is not None:
                 encoded = uuid.uuid4().hex
             else:
                 encoded = None
@@ -125,7 +125,8 @@ class HistoriesPhaseResource(Resource):
         parser.add_argument("phase_id", location="json")
         parser.add_argument("mentee_id", location="json")
         parser.add_argument("score", location="json")
-        parser.add_argument("certificate", location="json", type=bool, default=False)
+        parser.add_argument("certificate", location="json")
+        parser.add_argument("lock_key", location="json", type=bool)
         args = parser.parse_args()
 
         if args['phase_id'] is not None:
@@ -137,14 +138,17 @@ class HistoriesPhaseResource(Resource):
         if args['score'] is not None:
             qry_history_phase.score = args['score']
 
-        #Make number certificate
-        if int(args["score"]) >= 80:
-            print("test ========", qry_history_phase.certificate)
-            if qry_history_phase.certificate is None:
-                encoded = uuid.uuid4().hex
-                qry_history_phase.certificate = encoded
-        else:
-            qry_history_phase.certificate = None
+            #Make number certificate
+            if int(args["score"]) >= 80:
+                print("test ========", qry_history_phase.certificate)
+                if qry_history_phase.certificate is None:
+                    encoded = uuid.uuid4().hex
+                    qry_history_phase.certificate = encoded
+            else:
+                qry_history_phase.certificate = None
+
+        if args['lock_key'] is not None:
+            qry_history_phase.lock_key = args['lock_key']
 
         db.session.commit()
 
@@ -216,21 +220,23 @@ class HistoriesPhaseMentee(Resource):
         mentee_id = claims["id"]
 
         #get history phase mentee
-        qry_history_phase = HistoriesPhase.query.filter_by(mentee_id=mentee_id).all()
+        qry_history_phase = HistoriesPhase.query.filter_by(status=True).filter_by(mentee_id=mentee_id).all()
 
         histories_phase = []
         for history_phase in qry_history_phase:
-            history_phase = marshal(history_phase, history_phase.response_fields)
+            history_phase = marshal(history_phase, HistoriesPhase.response_fields)
+            
             #get phase in database
-            qry_phase = Phases.query.filter_by(id=history_phase["phase_id"]).first()
+            qry_phase = Phases.query.filter_by(status=True).filter_by(id=history_phase["phase_id"]).first()
             phase = marshal(qry_phase, Phases.response_fields)
+            
             #input phase in object history phase
             history_phase["phase"] = phase
             histories_phase.append(history_phase)
 
         return histories_phase, 200
 
-    #endpoint when login to post phase per masing-masing mentee
+    #endpoint when register to post phase per masing-masing mentee
     @mentee_required
     def post(self):
         #get id mentee
@@ -273,6 +279,7 @@ class HistoriesPhaseMentee(Resource):
         
         else:
             return {"status": "Mentee is already take the course"}, 404
+
 
 class HistoriesPhaseAllStatus(Resource):
     #for solve cors
