@@ -259,11 +259,20 @@ class HistoriesSubjectMentee(Resource):
                     
                     questions.append(question)
 
-            quizs[0]["question"] = questions
+            if qry_question is not None:
+                quizs[0]["question"] = questions
+            else:
+                quizs[0]["question"] = []
 
-            exams[0]["quiz"] = quizs
+            if qry_quiz is not None:
+                exams[0]["quiz"] = quizs
+            else:
+                exams[0]["quiz"] = []
 
-            history_subject["exam"] = exams
+            if qry_quiz is not None:
+                history_subject["exam"] = exams
+            else:
+                history_subject["exam"] = []
 
             histories_subject.append(history_subject)
 
@@ -381,11 +390,20 @@ class HistoriesSubjectByIdModule(Resource):
                         
                         questions.append(question)
 
-                quizs[0]["question"] = questions
+                if qry_question is not None:
+                    quizs[0]["question"] = questions
+                else:
+                    quizs[0]["question"] = []
 
-                exams[0]["quiz"] = quizs
+                if qry_quiz is not None:
+                    exams[0]["quiz"] = quizs
+                else:
+                    exams[0]["quiz"] = []
 
-                history_subject["exam"] = exams
+                if qry_quiz is not None:
+                    history_subject["exam"] = exams
+                else:
+                    history_subject["exam"] = []
 
                 histories_subject.append(history_subject)
 
