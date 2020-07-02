@@ -20,6 +20,7 @@ from ..admin.model import Admins
 from ..mentee.model import Mentees
 from ..phase.model import Phases
 from ..module.model import Modules
+from ..requirement_module.model import RequirementsModule
 from ..subject.model import Subjects
 from ..file_subject.model import FilesSubject
 from ..exam.model import Exams
@@ -278,6 +279,17 @@ class HistoriesModuleMentee(Resource):
             #input subject in object history module
             history_module["subject"] = subjects
 
+            #requirement
+            qry_requirement = RequirementsModule.query.filter_by(module_id=history_module["module_id"]).all()
+
+            requirements = []
+            for requirement in qry_requirement:
+                if requirement.status == True:
+                    requirement = marshal(requirement, RequirementsModule.response_fields)
+                    requirements.append(requirement)
+
+            history_module["requirement"] = requirements
+
             histories_module.append(history_module)
 
         return histories_module, 200
@@ -426,6 +438,17 @@ class HistoriesModuleByIdPhase(Resource):
 
                 #input subject in object history module
                 history_module["subject"] = subjects
+
+                #requirement
+                qry_requirement = RequirementsModule.query.filter_by(module_id=history_module["module_id"]).all()
+
+                requirements = []
+                for requirement in qry_requirement:
+                    if requirement.status == True:
+                        requirement = marshal(requirement, RequirementsModule.response_fields)
+                        requirements.append(requirement)
+
+                history_module["requirement"] = requirements
 
                 histories_module.append(history_module)
 
