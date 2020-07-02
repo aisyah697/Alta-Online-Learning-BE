@@ -58,8 +58,8 @@ class AltatestsResource(Resource):
     @mentee_required
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument("status", location="json", type=bool, default=True)
         parser.add_argument("question_sum", location="json", default=25)
+        parser.add_argument("status", location="json", type=bool, default=True)
         args = parser.parse_args()
 
         result = Altatests(

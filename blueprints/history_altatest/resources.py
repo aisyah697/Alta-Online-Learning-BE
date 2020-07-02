@@ -3,6 +3,7 @@ from flask import Blueprint
 from flask_restful import Resource, Api, reqparse, marshal, inputs
 from blueprints import db, app
 from sqlalchemy import desc
+from  sqlalchemy.sql.expression import func, select
 from flask_jwt_extended import (
     JWTManager,
     get_jwt_identity,
@@ -13,8 +14,12 @@ from flask_jwt_extended import (
 from blueprints import mentee_required, admin_required
 
 from .model import HistoriesAltatest
+from ..correction_altatest.model import CorrectionsAltatest
 from ..mentee.model import Mentees
 from ..altatest.model import Altatests
+from ..detail_altatest.model import DetailsAltatest
+from ..question_altatest.model import QuestionsAltatest
+from ..choice_altatest.model import ChoicesAltatest
 
 bp_history_altatest = Blueprint("history_altatest", __name__)
 api = Api(bp_history_altatest)
@@ -27,14 +32,37 @@ class HistoriesAltatestResource(Resource):
 
     # endpoint for get history altatest by ID
     def get(self, id=None):
-        qry_history_altatest = HistoriesAltatest.query.filter_by(
-            status=True).filter_by(id=id).first()
+        qry_history_altatest = HistoriesAltatest.query.filter_by(status=True).filter_by(id=id).first()
 
         if qry_history_altatest is not None:
-            qry_history_altatest = marshal(
-                qry_history_altatest, HistoriesAltatest.response_fields)
+            history_altatest = marshal(qry_history_altatest, HistoriesAltatest.response_fields)
+            
+            qry_altatest = Altatests.query.filter_by(status=True).filter_by(id=history_altatest["altatest_id"]).first()
 
-            return qry_history_altatest, 200
+            if qry_altatest is not None:
+                qry_detail_question = DetailsAltatest.query.filter_by(status=True).filter_by(altatest_id=qry_altatest.id).all()
+                rows = []
+                for question in qry_detail_question:
+                    arrays = []
+                    qry_choice = ChoicesAltatest.query.filter_by(status=True).filter_by(question_id=question.question_id).order_by(func.rand()).all()
+                    for choice in qry_choice:
+                        choice = marshal(choice, ChoicesAltatest.response_fields)
+                        choice["history_altatest_id"] = id
+                        arrays.append(choice)
+                    
+                    question_altatest = marshal(QuestionsAltatest.query.get(question.question_id), QuestionsAltatest.response_fields)
+                    question_altatest["choice"] = arrays
+
+                    rows.append(question_altatest)
+
+                altatest = marshal(qry_altatest, Altatests.response_fields)
+                altatest["question"] = rows
+
+                history_altatest["altatest"] = altatest
+
+                return history_altatest, 200
+            
+            return {"status": "Id Altatest is not found"}, 404
 
         return {"status": "Id History Altatest is not found"}, 404
 
@@ -42,31 +70,80 @@ class HistoriesAltatestResource(Resource):
     @mentee_required
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument("altatest_id", location="json", required=True)
-        parser.add_argument("score", location="json")
+        parser.add_argument("question_sum", location="json", default=25)
         parser.add_argument("status", location="json", type=bool, default=True)
         args = parser.parse_args()
 
+        result = Altatests(
+            args["question_sum"],
+            args["status"]
+        )
+
+        db.session.add(result)
+        db.session.commit()
+  
         #check id altatest
-        qry_altatest = Altatests.query.get(args["altatest_id"])
+        qry_altatest = Altatests.query.filter_by(status=True).filter_by(id=result.id).first()
+        altatest = marshal(qry_altatest, Altatests.response_fields)
+
         if qry_altatest is None:
             return {"status": "Altatest is Not Found"}, 404
+        
+        score = None
+        status =  True
         
         #get mentee_id from id authentification
         verify_jwt_in_request()
         claims = get_jwt_claims()
 
         result = HistoriesAltatest(
-            args["altatest_id"],
+            altatest["id"],
             claims["id"],
-            args["score"],
-            args["status"]
+            score,
+            status
         )
 
         db.session.add(result)
         db.session.commit()
 
-        return marshal(result, HistoriesAltatest.response_fields), 200
+        qry_question = QuestionsAltatest.query.filter_by(status=True).order_by(func.rand()).limit(args["question_sum"])
+        rows = []
+        for question in qry_question:
+            detail = DetailsAltatest(
+                altatest["id"],
+                question.id, 
+                True
+            )
+
+            db.session.add(detail)
+            db.session.commit()
+
+        #show respond after post
+        qry_history_altatest = HistoriesAltatest.query.filter_by(status=True).filter_by(id=result.id).first()
+        history_altatest = marshal(qry_history_altatest, HistoriesAltatest.response_fields)
+
+        qry_detail_question = DetailsAltatest.query.filter_by(status=True).filter_by(altatest_id=qry_altatest.id).all()
+        rows = []
+        for question in qry_detail_question:
+            arrays = []
+            qry_choice = ChoicesAltatest.query.filter_by(status=True).filter_by(question_id=question.question_id).order_by(func.rand()).all()
+            
+            for choice in qry_choice:
+                choice = marshal(choice, ChoicesAltatest.response_fields)
+                choice["history_altatest_id"] = qry_history_altatest.id
+                arrays.append(choice)
+ 
+            question_altatest = marshal(QuestionsAltatest.query.get(question.question_id), QuestionsAltatest.response_fields)
+            
+            question_altatest["choice"] = arrays
+
+            rows.append(question_altatest)
+
+        altatest["question"] = rows
+
+        history_altatest["altatest"] = altatest
+
+        return history_altatest, 200
 
     #endpoint for soft delete
     def put(self, id):
@@ -97,7 +174,7 @@ class HistoriesAltatestResource(Resource):
         
         if claims["role"] == "super" or claims["role"] == "council" or claims["role"] == "academic":
             #check id in query or not
-            qry_history_altatest = HistoriesAltatest.query.get(id)
+            qry_history_altatest = HistoriesAltatest.query.filter_by(id=id).first()
             
             if qry_history_altatest is None:
                 return {'status': 'History Altatest is NOT_FOUND'}, 404
@@ -170,13 +247,109 @@ class HistoriesAltatestAll(Resource):
 
         return rows, 200
 
+
+class HistoriesCorrectionQuestion(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+
+    #endpoint to get all status of history altatest 
+    @mentee_required
+    def post(self, id=None):
+        parser = reqparse.RequestParser()
+        parser.add_argument("history_altatest_id", location="json", required=True)
+        parser.add_argument("question_altatest_id", location="json", required=True)
+        parser.add_argument("answer_id", location="json", required=True)
+        args = parser.parse_args()
+
+        #check input history_altatest in database or not
+        qry_history_altatest = HistoriesAltatest.query.filter_by(id=args["history_altatest_id"]).filter_by(status=True).first()
+        if qry_history_altatest is None:
+            return {"status": "input history_altatest isn't in database"},403
+
+        #check input question in database or not
+        qry_question_altatest = QuestionsAltatest.query.filter_by(id=args["question_altatest_id"]).filter_by(status=True).first()
+        if qry_question_altatest is None:
+            return {"status": "input question isn't in database"},403
+
+        #check input answer isn't at database
+        qry_choice_altatest = ChoicesAltatest.query.filter_by(id=args["answer_id"]).filter_by(status=True).first()
+        if qry_choice_altatest is None:
+            return {"status": "input answer isn't in database"},403
+
+        #check answer match with question or not?
+        answer = ChoicesAltatest.query.filter_by(id=args["answer_id"]).filter_by(status=True).first()
+        print("CEK answer.question_id", answer.question_id)
+        print("CEK args['question_altatest_id']", args["question_altatest_id"])
+        if int(answer.question_id) != int(args["question_altatest_id"]):
+            return {"status": "input answer isn't in question"}, 403
+
+        #check input answer in one question is already there in database 
+        correction_altatest = CorrectionsAltatest.query.filter_by(history_altatest_id=args["history_altatest_id"]).filter_by(question_altatest_id=args["question_altatest_id"]).first()
+        if correction_altatest is None:
+            choice = qry_choice_altatest.is_correct
+
+            result = CorrectionsAltatest(
+                args["history_altatest_id"],
+                args["question_altatest_id"],
+                args["answer_id"],
+                choice,
+                True
+            )
+
+            db.session.add(result)
+            db.session.commit()
+
+            correction_altatest = CorrectionsAltatest.query.get(result.id)
+        
+        else:
+            if args["answer_id"] is not None:
+                correction_altatest.answer_id = args["answer_id"]
+                correction_altatest.is_correct = qry_choice_altatest.is_correct
+            else:
+                {"status": "answer isn't be inputed"}, 403
+
+            db.session.commit()
+
+        #Calculation Score for Altatest
+        #determine sum of question
+        qry_altatest = Altatests.query.filter_by(id=qry_history_altatest.altatest_id).filter_by(status=True).first()
+        sum_question = qry_altatest.question_sum
+        
+        #determine answer true
+        sum_true = 0
+        qry_correction_altatest = CorrectionsAltatest.query.filter_by(status=True).filter_by(history_altatest_id=args["history_altatest_id"]).all()
+        for answer in qry_correction_altatest:
+            if answer.is_correct == True:
+                sum_true += 1
+
+        #calculate score
+        score = sum_true * 100 // sum_question
+        
+        #input score in history altatest
+        qry_history_altatest.score = score
+        db.session.commit()
+
+        return marshal(correction_altatest, CorrectionsAltatest.response_fields), 200
+
+    #Endpoint delete Correction Altatest by Id
+    def delete(self, id):
+        correction_altatest = CorrectionsAltatest.query.get(id)
+
+        if correction_altatest is not None:
+            db.session.delete(correction_altatest)
+            db.session.commit()
+
+            return {"status": "DELETED SUCCESS"}, 200
+
+        return {"status": "NOT_FOUND"}, 404
+
 class HistoriesAltatestAllStatus(Resource):
     #for solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
         
     #endpoint to get all status of history altatest 
-    @admin_required
     def get(self):
         qry_history_altatest = HistoriesAltatest.query
 
@@ -194,3 +367,4 @@ class HistoriesAltatestAllStatus(Resource):
 api.add_resource(HistoriesAltatestAll, "")
 api.add_resource(HistoriesAltatestResource, "", "/<id>")
 api.add_resource(HistoriesAltatestAllStatus, "", "/all")
+api.add_resource(HistoriesCorrectionQuestion, "", "/question")

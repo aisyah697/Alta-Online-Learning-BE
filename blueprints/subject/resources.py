@@ -130,7 +130,7 @@ class SubjectsResource(Resource):
             args = parser.parse_args()
 
             if args['name'] is not None:
-                qry_subject.description = args["name"]
+                qry_subject.name = args["name"]
             
             if args['description'] is not None:
                 qry_subject.description = args["description"]

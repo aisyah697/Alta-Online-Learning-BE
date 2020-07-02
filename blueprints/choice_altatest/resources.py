@@ -199,27 +199,18 @@ class ChoicesAltatestAllStatus(Resource):
         return {"status": "ok"}, 200
         
     #endpoint to get all status of choice 
-    @admin_required
     def get(self):
-        #check role admin
-        verify_jwt_in_request()
-        claims = get_jwt_claims()
-        
-        if claims["role"] == "super" or claims["role"] == "council" or claims["role"] == "academic":
-            qry_choice_altatest = ChoicesAltatest.query
+        qry_choice_altatest = ChoicesAltatest.query
 
-            rows = []
-            for row in qry_choice_altatest:
-                row = marshal(row, ChoicesAltatest.response_fields)
-                rows.append(row)
+        rows = []
+        for row in qry_choice_altatest:
+            row = marshal(row, ChoicesAltatest.response_fields)
+            rows.append(row)
 
-            if rows == []:
-                return {"status": "data not found"}, 404
+        if rows == []:
+            return {"status": "data not found"}, 404
 
-            return rows, 200
-
-        else:
-            return {"status": "admin isn't at role super, council, and academic admin"}, 404
+        return rows, 200
 
 
 api.add_resource(ChoicesAltatestAll, "")
