@@ -5,6 +5,7 @@ from flask import Blueprint
 from flask_restful import Resource, Api, reqparse, marshal, inputs
 from blueprints import db, app
 from sqlalchemy import desc
+from  sqlalchemy.sql.expression import func, select
 from flask_jwt_extended import (
     JWTManager,
     get_jwt_identity,
@@ -32,7 +33,7 @@ class QuestionsAltatestResource(Resource):
         qry_question_altatest = QuestionsAltatest.query.filter_by(status=True).filter_by(id=id).first()
 
         if qry_question_altatest is not None:
-            qry_choice_altatest = ChoicesAltatest.query.filter_by(question_id=qry_question_altatest.id).all()
+            qry_choice_altatest = ChoicesAltatest.query.order_by(func.rand()).filter_by(question_id=qry_question_altatest.id).all()
             
             rows = []
             for row in qry_choice_altatest:
@@ -153,46 +154,37 @@ class QuestionsAltatestAll(Resource):
         return {"status": "ok"}, 200
 
     #endpoint to get all and sort by question and created_at
-    @admin_required
     def get(self):
-        #check role admin
-        verify_jwt_in_request()
-        claims = get_jwt_claims()
-        
-        if claims["role"] == "super" or claims["role"] == "council" or claims["role"] == "academic":
-            parser = reqparse.RequestParser()
-            parser.add_argument('p', type=int, location='args', default=1)
-            parser.add_argument('rp', type=int, location='args', default=25)
-            parser.add_argument('orderby', location='args', help='invalid status', choices=("question", "created_at"))
-            parser.add_argument('sort', location='args', help='invalid status', choices=("asc", "desc"))
-            args = parser.parse_args()
+        parser = reqparse.RequestParser()
+        parser.add_argument('p', type=int, location='args', default=1)
+        parser.add_argument('rp', type=int, location='args', default=25)
+        parser.add_argument('orderby', location='args', help='invalid status', choices=("question", "created_at"))
+        parser.add_argument('sort', location='args', help='invalid status', choices=("asc", "desc"))
+        args = parser.parse_args()
 
-            offset = (args['p'] * args['rp']) - args['rp']
+        offset = (args['p'] * args['rp']) - args['rp']
 
-            qry_question_altatest = QuestionsAltatest.query
+        qry_question_altatest = QuestionsAltatest.query
 
-            if args["orderby"] is not None:
-                if args['orderby'] == "question":
-                    if args["sort"] == "desc":
-                        qry_question_altatest = qry_question_altatest.order_by(desc(QuestionsAltatest.question))
-                    else:
-                        qry_question_altatest = qry_question_altatest.order_by(QuestionsAltatest.question)
-                elif args["orderby"] == "created_at":
-                    if args["sort"] == "desc":
-                        qry_question_altatest = qry_question_altatest.order_by(desc(QuestionsAltatest.created_at))
-                    else:
-                        qry_question_altatest = qry_question_altatest.order_by(QuestionsAltatest.created_at)
+        if args["orderby"] is not None:
+            if args['orderby'] == "question":
+                if args["sort"] == "desc":
+                    qry_question_altatest = qry_question_altatest.order_by(desc(QuestionsAltatest.question))
+                else:
+                    qry_question_altatest = qry_question_altatest.order_by(QuestionsAltatest.question)
+            elif args["orderby"] == "created_at":
+                if args["sort"] == "desc":
+                    qry_question_altatest = qry_question_altatest.order_by(desc(QuestionsAltatest.created_at))
+                else:
+                    qry_question_altatest = qry_question_altatest.order_by(QuestionsAltatest.created_at)
 
-            rows = []
-            for row in qry_question_altatest.limit(args['rp']).offset(offset).all():
-                if row.status == True:
-                    row = marshal(row, QuestionsAltatest.response_fields)
-                    rows.append(row)
+        rows = []
+        for row in qry_question_altatest.limit(args['rp']).offset(offset).all():
+            if row.status == True:
+                row = marshal(row, QuestionsAltatest.response_fields)
+                rows.append(row)
 
-            return rows, 200
-
-        else:
-            return {"status": "admin isn't at role super, council, and academic admin"}, 404
+        return rows, 200
 
 
 class QuestionsAltatestAllStatus(Resource):
@@ -201,27 +193,18 @@ class QuestionsAltatestAllStatus(Resource):
         return {"status": "ok"}, 200
         
     #endpoint to get all status of question
-    @admin_required 
     def get(self):
-        #check role admin
-        verify_jwt_in_request()
-        claims = get_jwt_claims()
-        
-        if claims["role"] == "super" or claims["role"] == "council" or claims["role"] == "academic":
-            qry_question_altatest = QuestionsAltatest.query
+        qry_question_altatest = QuestionsAltatest.query
 
-            rows = []
-            for row in qry_question_altatest:
-                row = marshal(row, QuestionsAltatest.response_fields)
-                rows.append(row)
+        rows = []
+        for row in qry_question_altatest:
+            row = marshal(row, QuestionsAltatest.response_fields)
+            rows.append(row)
 
-            if rows == []:
-                return {"status": "data not found"}, 404
+        if rows == []:
+            return {"status": "data not found"}, 404
 
-            return rows, 200
-
-        else:
-            return {"status": "admin isn't at role super, council, and academic admin"}, 404
+        return rows, 200
 
 
 api.add_resource(QuestionsAltatestAll, "")

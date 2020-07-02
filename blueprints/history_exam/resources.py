@@ -133,6 +133,10 @@ class HistoriesExamResource(Resource):
 
 
 class HistoriesExamAll(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+
     #endpoint to get all and sort by score and created at
     def get(self):
         parser = reqparse.RequestParser()
@@ -168,6 +172,10 @@ class HistoriesExamAll(Resource):
 
 
 class HistoriesExamAllStatus(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+        
     #endpoint to get all status of history exam
     def get(self):
         qry_history_exam = HistoriesExam.query
