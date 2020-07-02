@@ -422,11 +422,20 @@ class ModuleNestedById(Resource):
                                     
                                     questions.append(question)
 
-                            quizs[0]["question"] = questions
+                            if qry_question is not None:
+                                quizs[0]["question"] = questions
+                            else:
+                                quizs[0]["question"] = []
 
-                            exams[0]["quiz"] = quizs
+                            if qry_quiz is not None:
+                                exams[0]["quiz"] = quizs
+                            else:
+                                exams[0]["quiz"] = []
 
-                            subject["exam"] = exams
+                            if qry_quiz is not None:
+                                subject["exam"] = exams
+                            else:
+                                subject["exam"] = []
 
                             subjects.append(subject)
                     
@@ -546,11 +555,20 @@ class ModuleNestedAll(Resource):
                                     
                                     questions.append(question)
 
-                            quizs[0]["question"] = questions
+                            if qry_question is not None:
+                                quizs[0]["question"] = questions
+                            else:
+                                quizs[0]["question"] = []
 
-                            exams[0]["quiz"] = quizs
+                            if qry_quiz is not None:
+                                exams[0]["quiz"] = quizs
+                            else:
+                                exams[0]["quiz"] = []
 
-                            subject["exam"] = exams
+                            if qry_quiz is not None:
+                                subject["exam"] = exams
+                            else:
+                                subject["exam"] = []
 
                             subjects.append(subject)
                     
