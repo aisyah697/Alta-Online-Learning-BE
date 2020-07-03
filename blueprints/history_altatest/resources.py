@@ -4,6 +4,7 @@ from flask_restful import Resource, Api, reqparse, marshal, inputs
 from blueprints import db, app
 from sqlalchemy import desc
 from  sqlalchemy.sql.expression import func, select
+from datetime import datetime
 from flask_jwt_extended import (
     JWTManager,
     get_jwt_identity,
@@ -182,34 +183,45 @@ class HistoriesAltatestResource(Resource):
         return marshal(qry_history_altatest, HistoriesAltatest.response_fields), 200
 
     #endpoint for change score
-    @admin_required
+    @jwt_required
     def patch(self, id):
         #check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
-        
-        if claims["role"] == "super" or claims["role"] == "council" or claims["role"] == "academic":
-            #check id in query or not
-            qry_history_altatest = HistoriesAltatest.query.filter_by(id=id).first()
-            
-            if qry_history_altatest is None:
-                return {'status': 'History Altatest is NOT_FOUND'}, 404
-            
-            #input update status for soft delete
-            parser = reqparse.RequestParser()
-            parser.add_argument("score", location="json")
-            args = parser.parse_args()
-            
-            #change status for soft delete      
-            if args['score'] is not None:
-                qry_history_altatest.score = args['score']
 
+        if claims["status"] == "mentee":
+            qry_history_altatest = HistoriesAltatest.query.filter_by(mentee_id=claims["id"]).first()
+            score = qry_history_altatest.score
+            qry_history_altatest.score = 99999
+            db.session.commit()
+            qry_history_altatest.score = score
             db.session.commit()
 
             return marshal(qry_history_altatest, HistoriesAltatest.response_fields), 200
-
+        
         else:
-            return {"status": "admin isn't at role super admin"}, 404
+            if claims["role"] == "super" or claims["role"] == "council" or claims["role"] == "academic":
+                #check id in query or not
+                qry_history_altatest = HistoriesAltatest.query.filter_by(id=id).first()
+                
+                if qry_history_altatest is None:
+                    return {'status': 'History Altatest is NOT_FOUND'}, 404
+                
+                #input update status for soft delete
+                parser = reqparse.RequestParser()
+                parser.add_argument("score", location="json")
+                args = parser.parse_args()
+                
+                #change status for soft delete      
+                if args['score'] is not None:
+                    qry_history_altatest.score = args['score']
+
+                db.session.commit()
+
+                return marshal(qry_history_altatest, HistoriesAltatest.response_fields), 200
+
+            else:
+                return {"status": "admin isn't at role super admin"}, 404
 
     #Endpoint delete history Altatest by Id
     def delete(self, id):
