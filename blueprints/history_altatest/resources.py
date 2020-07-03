@@ -198,7 +198,7 @@ class HistoriesAltatestResource(Resource):
             return {'status': 'History Altatest is NOT_FOUND'}, 404
 
         parser = reqparse.RequestParser()
-        parser.add_argument("is_complete", location="json", help='invalid status', choices=("start", "end"))
+        parser.add_argument("is_complete", location="json", help='invalid status', choices=("start", "end", "null"))
         args = parser.parse_args()
 
         if args["is_complete"] == "start":
@@ -209,6 +209,9 @@ class HistoriesAltatestResource(Resource):
         
         elif args["is_complete"] == "end":
             qry_history_altatest.is_complete = args["is_complete"]
+
+        else:
+            qry_history_altatest.is_complete = None
 
         return marshal(qry_history_altatest, HistoriesAltatest.response_fields), 200
 
