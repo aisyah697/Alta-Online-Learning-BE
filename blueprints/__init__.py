@@ -114,6 +114,7 @@ from blueprints.question_altatest.resources import bp_question_altatest
 from blueprints.choice_altatest.resources import bp_choice_altatest
 from blueprints.altatest.resources import bp_altatest
 from blueprints.history_altatest.resources import bp_history_altatest
+from blueprints.correction_altatest.resources import bp_correction_altatest
 from blueprints.phase.resources import bp_phase
 from blueprints.module.resources import bp_module
 from blueprints.review_module.resources import bp_review_module
@@ -137,6 +138,7 @@ app.register_blueprint(bp_question_altatest, url_prefix="/questionaltatest")
 app.register_blueprint(bp_choice_altatest, url_prefix="/choicealtatest")
 app.register_blueprint(bp_altatest, url_prefix="/altatest")
 app.register_blueprint(bp_history_altatest, url_prefix="/historyaltatest")
+app.register_blueprint(bp_correction_altatest, url_prefix="/correctionaltatest")
 app.register_blueprint(bp_phase, url_prefix="/phase")
 app.register_blueprint(bp_module, url_prefix="/module")
 app.register_blueprint(bp_review_module, url_prefix="/reviewmodule")

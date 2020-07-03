@@ -116,6 +116,10 @@ class ChoicesQuizResource(Resource):
 
 
 class ChoicesQuizAll(Resource):
+    #endpoint for solve CORS
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+
     #endpoint to get all and sort by choice and created_at
     def get(self):
         parser = reqparse.RequestParser()
@@ -151,6 +155,10 @@ class ChoicesQuizAll(Resource):
 
 
 class ChoicesQuizAllStatus(Resource):
+    #endpoint for solve CORS
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+    
     #endpoint to get all status of choice 
     def get(self):
         qry_choice_quiz = ChoicesQuiz.query
