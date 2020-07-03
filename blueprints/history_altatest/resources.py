@@ -106,6 +106,7 @@ class HistoriesAltatestResource(Resource):
             return {"status": "Altatest is Not Found"}, 404
         
         score = None
+        is_complete = None
         status =  True
         
         #get mentee_id from id authentification
@@ -116,6 +117,7 @@ class HistoriesAltatestResource(Resource):
             altatest["id"],
             claims["id"],
             score,
+            is_complete,
             status
         )
 
@@ -184,44 +186,32 @@ class HistoriesAltatestResource(Resource):
 
     #endpoint for change score
     @jwt_required
-    def patch(self, id):
+    def patch(self):
         #check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
 
-        if claims["status"] == "mentee":
-            qry_history_altatest = HistoriesAltatest.query.filter_by(mentee_id=claims["id"]).first()
-            score = qry_history_altatest.score
-            qry_history_altatest.score = 99999
-            db.session.commit()
-            qry_history_altatest.score = score
-            db.session.commit()
+        #check id in query or not
+        qry_history_altatest = HistoriesAltatest.query.filter_by(mentee_id=claims["id"]).first()
 
-            return marshal(qry_history_altatest, HistoriesAltatest.response_fields), 200
+        if qry_history_altatest is None:
+            return {'status': 'History Altatest is NOT_FOUND'}, 404
+
+        parser = reqparse.RequestParser()
+        parser.add_argument("is_complete", location="json", help='invalid status', choices=("start", "end"))
+        args = parser.parse_args()
+
+        if args["is_complete"] == "start":
+            qry_history_altatest.is_complete = args["is_complete"]
+
+            qry_history_altatest.time_start = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            db.session.commit()
         
-        else:
-            if claims["role"] == "super" or claims["role"] == "council" or claims["role"] == "academic":
-                #check id in query or not
-                qry_history_altatest = HistoriesAltatest.query.filter_by(id=id).first()
-                
-                if qry_history_altatest is None:
-                    return {'status': 'History Altatest is NOT_FOUND'}, 404
-                
-                #input update status for soft delete
-                parser = reqparse.RequestParser()
-                parser.add_argument("score", location="json")
-                args = parser.parse_args()
-                
-                #change status for soft delete      
-                if args['score'] is not None:
-                    qry_history_altatest.score = args['score']
+        elif args["is_complete"] == "end":
+            qry_history_altatest.is_complete = args["is_complete"]
 
-                db.session.commit()
+        return marshal(qry_history_altatest, HistoriesAltatest.response_fields), 200
 
-                return marshal(qry_history_altatest, HistoriesAltatest.response_fields), 200
-
-            else:
-                return {"status": "admin isn't at role super admin"}, 404
 
     #Endpoint delete history Altatest by Id
     def delete(self, id):
