@@ -50,7 +50,7 @@ class HistoriesAltatestResource(Resource):
                 rows = []
                 for question in qry_detail_question:
                     arrays = []
-                    qry_choice = ChoicesAltatest.query.filter_by(status=True).filter_by(question_id=question.question_id).order_by(func.rand()).all()
+                    qry_choice = ChoicesAltatest.query.filter_by(status=True).filter_by(question_id=question.question_id).all()
                     for choice in qry_choice:
                         choice = marshal(choice, ChoicesAltatest.response_fields)
                         choice["history_altatest_id"] = qry_history_altatest.id
