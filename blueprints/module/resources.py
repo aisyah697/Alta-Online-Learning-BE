@@ -432,7 +432,7 @@ class ModuleNestedById(Resource):
                             else:
                                 exams[0]["quiz"] = []
 
-                            if qry_quiz is not None:
+                            if qry_exam is not None:
                                 subject["exam"] = exams
                             else:
                                 subject["exam"] = []
@@ -565,7 +565,7 @@ class ModuleNestedAll(Resource):
                             else:
                                 exams[0]["quiz"] = []
 
-                            if qry_quiz is not None:
+                            if qry_exam is not None:
                                 subject["exam"] = exams
                             else:
                                 subject["exam"] = []

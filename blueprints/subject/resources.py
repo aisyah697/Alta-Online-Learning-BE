@@ -255,7 +255,8 @@ class SubjectNestedById(Resource):
                 #exam
                 qry_exam = Exams.query.filter_by(status=True).filter_by(subject_id=subject["id"]).first()
                 exams = [marshal(qry_exam, Exams.response_fields)]
-                
+                print("===========", exams)
+
                 #quiz
                 qry_quiz = Quizs.query.filter_by(status=True).filter_by(exam_id=exams[0]["id"]).first()
                 quizs = [marshal(qry_quiz, Quizs.response_fields)]
@@ -288,7 +289,7 @@ class SubjectNestedById(Resource):
                 else:
                     exams[0]["quiz"] = []
 
-                if qry_quiz is not None:
+                if qry_exam is not None:
                     subject["exam"] = exams
                 else:
                     subject["exam"] = []
@@ -393,7 +394,7 @@ class SubjectNestedAll(Resource):
                     else:
                         exams[0]["quiz"] = []
 
-                    if qry_quiz is not None:
+                    if qry_exam is not None:
                         subject["exam"] = exams
                     else:
                         subject["exam"] = []
