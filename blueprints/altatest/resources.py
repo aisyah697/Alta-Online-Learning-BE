@@ -38,7 +38,7 @@ class AltatestsResource(Resource):
             rows = []
             for question in qry_detail_question:
                 arrays = []
-                qry_choice = ChoicesAltatest.query.order_by(func.rand()).filter_by(question_id=question.question_id).all()
+                qry_choice = ChoicesAltatest.query.filter_by(question_id=question.question_id).all()
                 for choice in qry_choice:
                     arrays.append(marshal(choice, ChoicesAltatest.response_fields))
                 
