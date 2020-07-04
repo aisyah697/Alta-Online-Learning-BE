@@ -215,9 +215,6 @@ class HistoriesAltatestResource(Resource):
             qry_history_altatest.is_complete = None
             db.session.commit()
 
-        else:
-            qry_history_altatest.is_complete = None
-
         return marshal(qry_history_altatest, HistoriesAltatest.response_fields), 200
 
 
