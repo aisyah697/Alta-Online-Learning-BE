@@ -209,6 +209,11 @@ class HistoriesAltatestResource(Resource):
         
         elif args["is_complete"] == "end":
             qry_history_altatest.is_complete = args["is_complete"]
+            db.session.commit()
+        
+        else:
+            qry_history_altatest.is_complete = None
+            db.session.commit()
 
         else:
             qry_history_altatest.is_complete = None

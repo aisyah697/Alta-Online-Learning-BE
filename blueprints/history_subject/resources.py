@@ -269,7 +269,7 @@ class HistoriesSubjectMentee(Resource):
             else:
                 exams[0]["quiz"] = []
 
-            if qry_quiz is not None:
+            if qry_exam is not None:
                 history_subject["exam"] = exams
             else:
                 history_subject["exam"] = []
