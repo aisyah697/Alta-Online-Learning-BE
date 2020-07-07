@@ -316,6 +316,7 @@ class HistoriesSubjectMentee(Resource):
             history_subjects = []
             for index, subject in enumerate(subjects):
                 score = None
+                time_of_exam = None
                 is_complete = False
                 
                 if index == 0:
@@ -329,6 +330,7 @@ class HistoriesSubjectMentee(Resource):
                     subject.id,
                     claims["id"],
                     score,
+                    time_of_exam,
                     is_complete,
                     lock_key,
                     status

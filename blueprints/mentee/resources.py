@@ -19,6 +19,15 @@ import boto3
 import re
 
 from .model import Mentees
+from ..phase.model import Phases
+from ..module.model import Modules
+from ..subject.model import Subjects
+from ..exam.model import Exams
+from ..history_altatest.model import HistoriesAltatest
+from ..history_phase.model import HistoriesPhase
+from ..history_module.model import HistoriesModule
+from ..history_subject.model import HistoriesSubject
+from ..history_exam.model import HistoriesExam
 
 bp_mentee = Blueprint("mentee", __name__)
 api = Api(bp_mentee)
@@ -383,6 +392,96 @@ class MenteesAll(Resource):
         return rows, 200
 
 
+class MenteesHistoryScore(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+
+    #get profile mentee and history score
+    @jwt_required
+    def get(self, id):
+        qry_mentee = Mentees.query.filter_by(status=True).filter_by(id=id).first()
+
+        if qry_mentee is not None:
+            mentee = marshal(qry_mentee, Mentees.response_fields)
+            
+            #altatest
+            altatest = HistoriesAltatest.query.filter_by(mentee_id=id).filter_by(status=True).first()
+
+            mentee["altatest"] = altatest.score
+
+            #history_phase
+            qry_history_phase = HistoriesPhase.query.filter_by(mentee_id=id).filter_by(status=True).all()
+
+            histories_phase = []
+            for history_phase in qry_history_phase:
+                history_phase = marshal(history_phase, HistoriesPhase.response_fields)
+                phase = Phases.query.filter_by(status=True).filter_by(id=history_phase["phase_id"]).first()
+                phase = marshal(phase, Phases.response_fields)
+                history_phase["name_phase"] = phase
+                phase = history_phase["phase_id"]
+                
+                #check same phase id
+                qry_history_module = HistoriesModule.query.filter_by(status=True).filter_by(mentee_id=id).all()
+                histories_module = []
+                for history_module in qry_history_module:
+                    module = Modules.query.filter_by(status=True).filter_by(id=history_module.module_id).first()
+                    if module.phase_id == phase:
+                        histories_module.append(history_module)
+                
+                #input module in the same phase
+                modules = []
+                for history_module in histories_module:
+                    history_module = marshal(history_module, HistoriesModule.response_fields)
+                    module = Modules.query.filter_by(status=True).filter_by(id=history_module["module_id"]).first()
+                    module = marshal(module, Modules.response_fields)
+                    history_module["name_module"] = module
+                    module = history_module["module_id"]
+
+                    #check same module id
+                    qry_history_subject = HistoriesSubject.query.filter_by(status=True).filter_by(mentee_id=id).all()
+                    histories_subject = []
+                    for history_subject in qry_history_subject:
+                        subject = Subjects.query.filter_by(status=True).filter_by(id=history_subject.subject_id).first()
+                        if subject.module_id == module:
+                            histories_subject.append(history_subject)
+
+                    #input subject in the same module
+                    subjects = []
+                    for history_subject in histories_subject:
+                        history_subject = marshal(history_subject, HistoriesSubject.response_fields)
+                        subject = Subjects.query.filter_by(status=True).filter_by(id=history_subject["subject_id"]).first()
+                        subject = marshal(subject, Subjects.response_fields)
+                        history_subject["name_subject"] = subject
+                        
+                        #get score exam
+                        qry_exam = Exams.query.filter_by(subject_id=history_subject["subject_id"]).filter_by(status=True).first()
+                        score_exam = []
+                        if qry_exam is not None:
+                            qry_history_exam = HistoriesExam.query.filter_by(mentee_id=id).filter_by(exam_id=qry_exam.id).filter_by(status=True).all()
+                            
+                            for history_exam in qry_history_exam:
+                                score_exam.append(history_exam.score)
+
+                        history_subject["score_exam"] = score_exam
+
+                        subjects.append(history_subject)
+                    
+                    history_module["subject"] = subjects
+
+                    modules.append(history_module)
+                
+                    history_phase["module"] = modules
+
+                histories_phase.append(history_phase)
+
+            mentee["phase"] = histories_phase
+                            
+            return mentee, 200
+        
+        return {"status": "Id Mentees not found"}, 404
+
+
 class MenteesAllStatus(Resource):
     #for solve cors
     def option(self, id=None):
@@ -404,4 +503,5 @@ class MenteesAllStatus(Resource):
 
 api.add_resource(MenteesAll, "")
 api.add_resource(MenteesResource, "", "/<id>")
+api.add_resource(MenteesHistoryScore, "", "/score/<id>")
 api.add_resource(MenteesAllStatus, "", "/all")
