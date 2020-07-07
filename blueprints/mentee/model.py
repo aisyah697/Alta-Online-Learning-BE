@@ -49,7 +49,8 @@ class Mentees(db.Model):
 
     jwt_claims_fields = {
         "id": fields.Integer,
-        "username": fields.String
+        "username": fields.String,
+        "full_name": fields.String
     }
 
     def __init__ (self, username, password, full_name, email, address, phone, place_birth, date_birth, avatar, background_education, github, description, salt, status):

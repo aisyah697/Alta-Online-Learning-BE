@@ -5,10 +5,12 @@ from sqlalchemy.sql.expression import text
 from datetime import datetime
 
 from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy import Table, Column, Integer
 
 from blueprints.altatest.model import Altatests
 from blueprints.mentee.model import Mentees
+
 
 class HistoriesAltatest(db.Model):
     __tablename__ = "histories_altatest"
@@ -21,6 +23,7 @@ class HistoriesAltatest(db.Model):
     status = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
+    correction_altatest = db.relationship("CorrectionsAltatest", cascade="all, delete-orphan", passive_deletes=True)
 
     response_fields = {
         "id": fields.Integer,

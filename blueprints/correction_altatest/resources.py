@@ -39,7 +39,7 @@ class CorrectionsAltatestResource(Resource):
 
         qry_correction_altatest = CorrectionsAltatest.query.filter_by(status=True).filter_by(question_altatest_id=args["question_altatest_id"]).filter_by(history_altatest_id=qry_history_altatest.id).all()
 
-        if qry_correction_altatest is None:
+        if qry_correction_altatest == []:
             return {"status": "Answer of this question is not found"}, 404
 
         return marshal(qry_correction_altatest, CorrectionsAltatest.response_fields), 200

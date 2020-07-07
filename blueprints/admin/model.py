@@ -50,6 +50,7 @@ class Admins(db.Model):
     jwt_claims_fields = {
         "id": fields.Integer,
         "username": fields.String,
+        "full_name": fields.String,
         "role": fields.String,
     }
 
