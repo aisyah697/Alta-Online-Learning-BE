@@ -35,54 +35,66 @@ class HistoriesExamResource(Resource):
         return {"status": "ok"}, 200
 
     #endpoint for search history exam by id
-    def get(self, id=None):
-        qry_history_exam = HistoriesExam.query.filter_by(status=True).filter_by(id=id).first()
+    @mentee_required
+    def get(self):
+        #get id mentee from token
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
 
-        if qry_history_exam is not None:
-            #exam
-            qry_exam = Exams.query.filter_by(id=qry_history_exam.exam_id).first()
-            exam = marshal(qry_exam, Exams.response_fields)
-            
-            if qry_exam.type_exam == "quiz":
-                #quiz
-                qry_quiz = Quizs.query.filter_by(exam_id=qry_exam.id).first()
-                quiz = marshal(qry_quiz, Quizs.response_fields)
+        parser = reqparse.RequestParser()
+        parser.add_argument("exam_id", location="args", required=True)
+        args = parser.parse_args()
+
+        qry_history_exam = HistoriesExam.query.filter_by(status=True).filter_by(mentee_id=claims["id"]).filter_by(exam_id=args["exam_id"]).all()
+
+        if qry_history_exam != []:
+            histories_exam =[]
+            for history_exam in qry_history_exam:
+                #exam
+                qry_exam = Exams.query.filter_by(id=history_exam.exam_id).first()
+                exam = marshal(qry_exam, Exams.response_fields)
                 
-                #question
-                qry_question = QuestionsQuiz.query.filter_by(quiz_id=qry_quiz.id).all()
-                questions = []
-                for question in qry_question:
-                    question = marshal(question, QuestionsQuiz.response_fields)
+                if qry_exam.type_exam == "quiz":
+                    #quiz
+                    qry_quiz = Quizs.query.filter_by(exam_id=qry_exam.id).first()
+                    quiz = marshal(qry_quiz, Quizs.response_fields)
+                    
+                    #question
+                    qry_question = QuestionsQuiz.query.filter_by(quiz_id=qry_quiz.id).all()
+                    questions = []
+                    for question in qry_question:
+                        question = marshal(question, QuestionsQuiz.response_fields)
 
-                    #choice
-                    qry_choice = ChoicesQuiz.query.filter_by(question_id=question["id"]).all()
-                    choices = []
-                    for choice in qry_choice:
-                        choice = marshal(choice, ChoicesQuiz.response_fields)
-                        choice["history_exam"] = id
-                        choices.append(choice)
+                        #choice
+                        qry_choice = ChoicesQuiz.query.filter_by(question_id=question["id"]).all()
+                        choices = []
+                        for choice in qry_choice:
+                            choice = marshal(choice, ChoicesQuiz.response_fields)
+                            choice["history_exam"] = history_exam.id
+                            choices.append(choice)
 
-                    question["choice"] = choices
+                        question["choice"] = choices
 
-                    questions.append(question)
+                        questions.append(question)
 
-                quiz["question"] = questions
+                    quiz["question"] = questions
 
-                exam["quiz"] = quiz
-                
-            else:
-                qry_livecode = Livecodes.query.filter_by(exam_id=qry_exam.id).first()
-                livecode = []
-                if qry_livecode is not None:
-                    livecode = marshal(qry_livecode, Livecodes.response_fields)
-                exam["livecode"] = livecode
+                    exam["quiz"] = quiz
+                    
+                else:
+                    qry_livecode = Livecodes.query.filter_by(exam_id=qry_exam.id).first()
+                    livecode = []
+                    if qry_livecode is not None:
+                        livecode = marshal(qry_livecode, Livecodes.response_fields)
+                    exam["livecode"] = livecode
 
-            history_exam = marshal(qry_history_exam, HistoriesExam.response_fields)
-            history_exam["exam"] = exam
+                history_exam = marshal(history_exam, HistoriesExam.response_fields)
+                history_exam["exam"] = exam
+                histories_exam.append(history_exam)
 
-            return history_exam, 200
+            return histories_exam, 200
         
-        return {"status": "Id history exam not found"}, 404
+        return "not_found", 404
 
     #endpoint for post history exam
     @mentee_required
@@ -241,6 +253,6 @@ class HistoriesExamAllStatus(Resource):
 
         return rows, 200
 
-api.add_resource(HistoriesExamAll, "")
 api.add_resource(HistoriesExamResource, "", "/<id>")
+api.add_resource(HistoriesExamAll, "", "/allexam")
 api.add_resource(HistoriesExamAllStatus, "", "/all")

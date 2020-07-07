@@ -196,8 +196,9 @@ class CorrectionsExamSubmit(Resource):
         args = parser.parse_args()
 
         qry_history_exam = HistoriesExam.query.filter_by(status=True).filter_by(id=args["history_exam_id"]).first()
+
         if qry_history_exam is None:
-            {"status": "History Exam in this Id isn't exist"}, 403
+            return {"status": "History Exam in this Id isn't exist"}, 403
 
         qry_history_exam.is_complete = True
 
