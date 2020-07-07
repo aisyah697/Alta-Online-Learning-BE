@@ -356,7 +356,10 @@ class HistoriesCorrectionQuestion(Resource):
         #Calculation Score for Altatest
         #determine sum of question
         qry_altatest = Altatests.query.filter_by(id=qry_history_altatest.altatest_id).filter_by(status=True).first()
-        sum_question = qry_altatest.question_sum
+        qry_question = DetailsAltatest.query.filter_by(altatest_id=qry_altatest.id).filter_by(status=True).all()
+        sum_question = len(qry_question)
+
+        print ("=====================", sum_question)
         
         #determine answer true
         sum_true = 0
