@@ -3,21 +3,27 @@ import os
 import werkzeug
 from flask import Blueprint
 from flask_restful import Resource, Api, reqparse, marshal, inputs
-
 from blueprints import db, app
 from sqlalchemy import desc
-# import hashlib, uuid 
-# from flask_jwt_extended import (
-#     JWTManager,
-#     create_access_token,
-#     get_jwt_identity,
-#     jwt_required,
-#     get_jwt_claims,
-# )
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token,
+    get_jwt_identity,
+    verify_jwt_in_request,
+    jwt_required,
+    get_jwt_claims,
+)
+from blueprints import mentee_required
 
 from .model import HistoriesExam
 from ..mentee.model import Mentees
+from ..module.model import Modules
+from ..subject.model import Subjects
 from ..exam.model import Exams
+from ..quiz.model import Quizs
+from ..livecode.model import Livecodes
+from ..question_quiz.model import QuestionsQuiz
+from ..choice_quiz.model import ChoicesQuiz
 
 bp_history_exam = Blueprint("history_exam", __name__)
 api = Api(bp_history_exam)
@@ -33,24 +39,64 @@ class HistoriesExamResource(Resource):
         qry_history_exam = HistoriesExam.query.filter_by(status=True).filter_by(id=id).first()
 
         if qry_history_exam is not None:
-            return marshal(qry_history_exam, HistoriesExam.response_fields), 200
+            #exam
+            qry_exam = Exams.query.filter_by(id=qry_history_exam.exam_id).first()
+            exam = marshal(qry_exam, Exams.response_fields)
+            
+            if qry_exam.type_exam == "quiz":
+                #quiz
+                qry_quiz = Quizs.query.filter_by(exam_id=qry_exam.id).first()
+                quiz = marshal(qry_quiz, Quizs.response_fields)
+                
+                #question
+                qry_question = QuestionsQuiz.query.filter_by(quiz_id=qry_quiz.id).all()
+                questions = []
+                for question in qry_question:
+                    question = marshal(question, QuestionsQuiz.response_fields)
+
+                    #choice
+                    qry_choice = ChoicesQuiz.query.filter_by(question_id=question["id"]).all()
+                    choices = []
+                    for choice in qry_choice:
+                        choice = marshal(choice, ChoicesQuiz.response_fields)
+                        choice["history_exam"] = id
+                        choices.append(choice)
+
+                    question["choice"] = choices
+
+                    questions.append(question)
+
+                quiz["question"] = questions
+
+                exam["quiz"] = quiz
+                
+            else:
+                qry_livecode = Livecodes.query.filter_by(exam_id=qry_exam.id).first()
+                livecode = []
+                if qry_livecode is not None:
+                    livecode = marshal(qry_livecode, Livecodes.response_fields)
+                exam["livecode"] = livecode
+
+            history_exam = marshal(qry_history_exam, HistoriesExam.response_fields)
+            history_exam["exam"] = exam
+
+            return history_exam, 200
         
         return {"status": "Id history exam not found"}, 404
 
     #endpoint for post history exam
+    @mentee_required
     def post(self):
+        #get id mentee from token
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        
         parser = reqparse.RequestParser()
         parser.add_argument("exam_id", location="json", required=True)
-        parser.add_argument("mentee_id", location="json", required=True)
-        parser.add_argument("score", location="json")
+        parser.add_argument("score", location="json", default = None)
+        parser.add_argument("is_complete", location="json", type=bool, default=False)
         parser.add_argument("status", location="json", type=bool, default=True)
         args = parser.parse_args()
-
-
-        #Check subject and mentee is existance in database
-        qry_history_exam = HistoriesExam.query.filter_by(exam_id=args["exam_id"]).filter_by(mentee_id=args["mentee_id"]).filter_by(status=True).all()
-        if len(qry_history_exam) >= 3:
-            return {"status": "Exam and Mentee is there 3 times"}, 404
 
         #Check Id Exam is in database or not
         qry_exam = Exams.query.get(args["exam_id"])
@@ -58,14 +104,15 @@ class HistoriesExamResource(Resource):
             return {"status": "ID Exam is Not Found"}, 404
         
         #Check Id Mentee is in database or not
-        qry_mentee = Mentees.query.get(args["mentee_id"])
+        qry_mentee = Mentees.query.get(claims["id"])
         if qry_mentee is None:
             return {"status": "ID Mentee is Not Found"}, 404
 
         result = HistoriesExam(
             args["exam_id"],
-            args["mentee_id"],
+            claims["id"],
             args["score"],
+            args["is_complete"],
             args["status"]
         )
 
@@ -103,6 +150,7 @@ class HistoriesExamResource(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument("exam_id", location="json")
         parser.add_argument("mentee_id", location="json")
+        parser.add_argument("is_complete", location="json")
         parser.add_argument("score", location="json")
         args = parser.parse_args()
 
@@ -111,7 +159,10 @@ class HistoriesExamResource(Resource):
 
         if args['mentee_id'] is not None:
             qry_history_exam.mentee_id = args['mentee_id']
-        
+
+        if args['is_complete'] is not None:
+            qry_history_exam.is_complete = args['is_complete']
+
         if args['score'] is not None:
             qry_history_exam.score = args['score']
 

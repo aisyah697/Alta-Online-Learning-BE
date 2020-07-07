@@ -35,13 +35,30 @@ class HistoriesSubjectResource(Resource):
         return {"status": "ok"}, 200
 
     #endpoint for search history subject by id
+    @mentee_required
     def get(self, id=None):
+        #check mentee id
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        mentee_id = claims["id"]
+
         qry_history_subject = HistoriesSubject.query.filter_by(status=True).filter_by(id=id).first()
 
+        if qry_history_subject is None:
+            return {"status": "Id history subject not found"}, 404
+
+        if qry_history_subject.mentee_id != mentee_id:
+            return {"status": "mentee_id in token and history subject isn't match"}, 403
+
         if qry_history_subject is not None:
-            return marshal(qry_history_subject, HistoriesSubject.response_fields), 200
-        
-        return {"status": "Id history subject not found"}, 404
+            qry_exam = Exams.query.filter_by(subject_id=qry_history_subject.subject_id).first()
+            exam = marshal(qry_exam, Exams.response_fields)
+
+            history_subject = marshal(qry_history_subject, HistoriesSubject.response_fields)
+
+            history_subject["exam"] = exam
+
+            return history_subject, 200
 
     #endpoint for post history subject
     @mentee_required
@@ -49,7 +66,8 @@ class HistoriesSubjectResource(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument("subject_id", location="json", required=True)
         parser.add_argument("mentee_id", location="json", required=True)
-        parser.add_argument("score", location="json")
+        parser.add_argument("score", location="json", default=None)
+        parser.add_argument("time_of_exam", location="json", default=None)
         parser.add_argument("is_complete", location="json", type=bool, default=False)
         parser.add_argument("lock_key", location="json", type=bool, default=False)
         parser.add_argument("status", location="json", type=bool, default=True)
@@ -80,6 +98,7 @@ class HistoriesSubjectResource(Resource):
             args["subject_id"],
             args["mentee_id"],
             args["score"],
+            args["time_of_exam"],
             args["is_complete"],
             args["lock_key"],
             args["status"]
@@ -119,7 +138,8 @@ class HistoriesSubjectResource(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument("subject_id", location="json")
         parser.add_argument("mentee_id", location="json")
-        parser.add_argument("score", location="json")
+        parser.add_argument("score", location="json", default=None)
+        parser.add_argument("time_of_exam", location="json", default=None)
         parser.add_argument("is_complete", location="json", type=bool, default=False)
         parser.add_argument("lock_key", location="json", type=bool, default=False)
         args = parser.parse_args()
@@ -130,6 +150,9 @@ class HistoriesSubjectResource(Resource):
         if args['mentee_id'] is not None:
             qry_history_subject.mentee_id = args['mentee_id']
         
+        if args['time_of_exam'] is not None:
+            qry_history_subject.time_of_exam = args['time_of_exam']
+
         if args['score'] is not None:
             qry_history_subject.score = args['score']
             if int(args["score"]) >= 80:

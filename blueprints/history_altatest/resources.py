@@ -276,7 +276,7 @@ class HistoriesCorrectionQuestion(Resource):
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all status of history altatest 
+    #endpoint to correction question of altatest and calculate score, then input on database alatatest
     @mentee_required
     def post(self, id=None):
         parser = reqparse.RequestParser()
@@ -285,7 +285,7 @@ class HistoriesCorrectionQuestion(Resource):
         parser.add_argument("answer_id", location="json", default=None)
         args = parser.parse_args()
 
-        #check input history_altatest in database or not
+        #check input history_altatest in database there or not
         qry_history_altatest = HistoriesAltatest.query.filter_by(id=args["history_altatest_id"]).filter_by(status=True).first()
         if qry_history_altatest is None:
             return {"status": "input history_altatest isn't in database"}, 403
@@ -297,7 +297,7 @@ class HistoriesCorrectionQuestion(Resource):
         if claims["id"] != qry_history_altatest.mentee_id:
             return {"status": "mentee in token and history_altatest isn't match"}, 403
 
-        #check input question in database or not
+        #check input question is in database or not
         qry_question_altatest = QuestionsAltatest.query.filter_by(id=args["question_altatest_id"]).filter_by(status=True).first()
         if qry_question_altatest is None:
             return {"status": "input question isn't in database"}, 403
@@ -315,8 +315,10 @@ class HistoriesCorrectionQuestion(Resource):
                 return {"status": "input answer isn't in question"}, 403
 
         #check input answer in one question is already there in database 
-        correction_altatest = CorrectionsAltatest.query.filter_by(history_altatest_id=args["history_altatest_id"]).filter_by(question_altatest_id=args["question_altatest_id"]).first()
-        if correction_altatest is None:
+        correction_altatest = CorrectionsAltatest.query.filter_by(history_altatest_id=args["history_altatest_id"]).filter_by(question_altatest_id=args["question_altatest_id"]).filter_by(status=True).first()
+        qry_choice_altatest = ChoicesAltatest.query.filter_by(id=args["answer_id"]).filter_by(status=True).first()
+        
+        if correction_altatest is None:    
             if args["answer_id"] is not None:
                 choice = qry_choice_altatest.is_correct
 
@@ -328,11 +330,12 @@ class HistoriesCorrectionQuestion(Resource):
                     True
                 )
             else:
+                choice = None
                 result = CorrectionsAltatest(
                     args["history_altatest_id"],
                     args["question_altatest_id"],
                     args["answer_id"],
-                    None,
+                    choice,
                     True
                 )
 
@@ -363,7 +366,7 @@ class HistoriesCorrectionQuestion(Resource):
                 sum_true += 1
 
         #calculate score
-        score = sum_true * 100 // sum_question
+        score = round(sum_true * 100 / sum_question)
         
         #input score in history altatest
         qry_history_altatest.score = score

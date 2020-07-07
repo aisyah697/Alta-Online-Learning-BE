@@ -16,6 +16,7 @@ class HistoriesSubject(db.Model):
     subject_id = db.Column(db.Integer, db.ForeignKey(Subjects.id, ondelete="CASCADE"), nullable=False)
     mentee_id = db.Column(db.Integer, db.ForeignKey(Mentees.id, ondelete="CASCADE"), nullable=False)
     score = db.Column(db.Integer)
+    time_of_exam = db.Column(db.Integer)
     is_complete = db.Column(db.Boolean)
     lock_key = db.Column(db.Boolean)
     status = db.Column(db.Boolean)
@@ -27,6 +28,7 @@ class HistoriesSubject(db.Model):
         "subject_id": fields.Integer,
         "mentee_id": fields.Integer,
         "score": fields.Integer,
+        "time_of_exam": fields.Integer,
         "is_complete": fields.Boolean,
         "lock_key": fields.Boolean,
         "status": fields.Boolean,
@@ -34,10 +36,11 @@ class HistoriesSubject(db.Model):
         "update_at": fields.DateTime
     }
 
-    def __init__ (self, subject_id, mentee_id, score, is_complete, lock_key, status):
+    def __init__ (self, subject_id, mentee_id, score, time_of_exam, is_complete, lock_key, status):
         self.subject_id = subject_id
         self.mentee_id = mentee_id
         self.score = score
+        self.time_of_exam = time_of_exam
         self.is_complete = is_complete
         self.lock_key = lock_key
         self.status = status

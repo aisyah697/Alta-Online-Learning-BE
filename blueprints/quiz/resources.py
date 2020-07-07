@@ -3,14 +3,15 @@ from flask import Blueprint
 from flask_restful import Resource, Api, reqparse, marshal, inputs
 from blueprints import db, app
 from sqlalchemy import desc
-# import hashlib, uuid
-# from flask_jwt_extended import (
-#     JWTManager,
-#     create_access_token,
-#     get_jwt_identity,
-#     jwt_required,
-#     get_jwt_claims,
-# )
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token,
+    get_jwt_identity,
+    verify_jwt_in_request,
+    jwt_required,
+    get_jwt_claims,
+)
+from blueprints import admin_required
 
 from .model import Quizs
 from ..exam.model import Exams
@@ -25,48 +26,66 @@ class QuizsResource(Resource):
         return {"status": "ok"}, 200
 
     #endpoint for get quiz by ID
+    @admin_required
     def get(self, id=None):
-        qry_quiz = Quizs.query.filter_by(status=True).filter_by(id=id).first()
-
-        if qry_quiz is not None:
-            quiz = marshal(qry_quiz, Quizs.response_fields)
-            
-            return quiz, 200
+        #check role admin
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
         
-        return {"status": "Id quiz is not found"}, 404
+        if claims["role"] == "super" or claims["role"] == "academic":
+            qry_quiz = Quizs.query.filter_by(status=True).filter_by(id=id).first()
+
+            if qry_quiz is not None:
+                quiz = marshal(qry_quiz, Quizs.response_fields)
+                
+                return quiz, 200
+            
+            return {"status": "Id quiz is not found"}, 404
+
+        else:
+            return {"status": "admin isn't at role super admin and academic admin"}, 404
 
     #endpoint post quiz
+    @admin_required
     def post(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument("exam_id", location="json", required=True)
-        parser.add_argument("name", location="json")
-        parser.add_argument("description", location="json")
-        parser.add_argument("status", location="json", type=bool, default=True)
-        args = parser.parse_args()
-
-        #check exam_id
-        exam_id = Exams.query.get(args["exam_id"])
-
-        if exam_id is None:
-            return {"status": "Exam isn't in database"}, 404
-
-        #Check there no same exam_id
-        exam_id_quiz = Quizs.query.filter_by(exam_id=args["exam_id"]).first()
+        #check role admin
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
         
-        if exam_id_quiz is not None:
-            return {"status": "Quiz for this exam is already there"}, 404
+        if claims["role"] == "super" or claims["role"] == "academic":
+            parser = reqparse.RequestParser()
+            parser.add_argument("exam_id", location="json", required=True)
+            parser.add_argument("name", location="json")
+            parser.add_argument("description", location="json")
+            parser.add_argument("status", location="json", type=bool, default=True)
+            args = parser.parse_args()
 
-        result = Quizs(
-            args["exam_id"],
-            args["name"],
-            args["description"],
-            args["status"]
-        )
+            #check exam_id
+            exam_id = Exams.query.get(args["exam_id"])
 
-        db.session.add(result)
-        db.session.commit()
+            if exam_id is None:
+                return {"status": "Exam isn't in database"}, 404
 
-        return marshal(result, Quizs.response_fields), 200
+            #Check there no same exam_id
+            exam_id_quiz = Quizs.query.filter_by(exam_id=args["exam_id"]).first()
+            
+            if exam_id_quiz is not None:
+                return {"status": "Quiz for this exam is already there"}, 404
+
+            result = Quizs(
+                args["exam_id"],
+                args["name"],
+                args["description"],
+                args["status"]
+            )
+
+            db.session.add(result)
+            db.session.commit()
+
+            return marshal(result, Quizs.response_fields), 200
+
+        else:
+            return {"status": "admin isn't at role super admin and academic admin"}, 404
 
     #endpoint for soft delete
     def put(self, id):
@@ -89,74 +108,109 @@ class QuizsResource(Resource):
         return marshal(qry_quiz, Quizs.response_fields), 200
 
     #endpoint for update quiz
+    @admin_required
     def patch(self, id):
-        qry_quiz = Quizs.query.filter_by(status=True).filter_by(id=id).first()
-        if qry_quiz is None:
-            return {'status': 'Quiz is NOT_FOUND'}, 404
+        #check role admin
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        
+        if claims["role"] == "super" or claims["role"] == "academic":
+            qry_quiz = Quizs.query.filter_by(status=True).filter_by(id=id).first()
+            if qry_quiz is None:
+                return {'status': 'Quiz is NOT_FOUND'}, 404
 
-        parser = reqparse.RequestParser()
-        parser.add_argument("exam_id", location="json")
-        parser.add_argument("name", location="json")
-        parser.add_argument("description", location="json")
-        args = parser.parse_args()
+            parser = reqparse.RequestParser()
+            parser.add_argument("exam_id", location="json")
+            parser.add_argument("name", location="json")
+            parser.add_argument("description", location="json")
+            args = parser.parse_args()
 
-        if args['exam_id'] is not None:
-            qry_quiz.exam_id = args['exam_id']
+            if args['exam_id'] is not None:
+                qry_quiz.exam_id = args['exam_id']
 
-        if args['name'] is not None:
-            qry_quiz.name = args['name']
+            if args['name'] is not None:
+                qry_quiz.name = args['name']
 
-        if args['description'] is not None:
-            qry_quiz.description = args['description']
+            if args['description'] is not None:
+                qry_quiz.description = args['description']
 
-        db.session.commit()
-
-        return marshal(qry_quiz, Quizs.response_fields), 200
-
-    #Endpoint delete quiz by Id
-    def delete(self, id):
-        quiz_exam = Quizs.query.get(id)
-
-        if quiz_exam is not None:
-            db.session.delete(quiz_exam)
             db.session.commit()
 
-            return {"status": "DELETED SUCCESS"}, 200
+            return marshal(qry_quiz, Quizs.response_fields), 200
 
-        return {"status": "NOT_FOUND"}, 404
+        else:
+            return {"status": "admin isn't at role super admin and academic admin"}, 404
+
+    #Endpoint delete quiz by Id
+    @admin_required
+    def delete(self, id):
+        #check role admin
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        
+        if claims["role"] == "super" or claims["role"] == "academic":
+            quiz_exam = Quizs.query.get(id)
+
+            if quiz_exam is not None:
+                db.session.delete(quiz_exam)
+                db.session.commit()
+
+                return {"status": "DELETED SUCCESS"}, 200
+
+            return {"status": "NOT_FOUND"}, 404
+
+        else:
+            return {"status": "admin isn't at role super admin and academic admin"}, 404
 
 
 class QuizsAll(Resource):
+    #endpoint for solve CORS
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+    
     #endpoint to get all and sort by exam_id
+    @admin_required
     def get(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument('p', type=int, location='args', default=1)
-        parser.add_argument('rp', type=int, location='args', default=25)
-        parser.add_argument('orderby', location='args', help='invalid status', choices=("exam_id"))
-        parser.add_argument('sort', location='args', help='invalid status', choices=("asc", "desc"))
-        args = parser.parse_args()
+        #check role admin
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        
+        if claims["role"] == "super" or claims["role"] == "academic":
+            parser = reqparse.RequestParser()
+            parser.add_argument('p', type=int, location='args', default=1)
+            parser.add_argument('rp', type=int, location='args', default=25)
+            parser.add_argument('orderby', location='args', help='invalid status', choices=("exam_id"))
+            parser.add_argument('sort', location='args', help='invalid status', choices=("asc", "desc"))
+            args = parser.parse_args()
 
-        offset = (args['p'] * args['rp']) - args['rp']
+            offset = (args['p'] * args['rp']) - args['rp']
 
-        qry_quiz = Quizs.query
+            qry_quiz = Quizs.query
 
-        if args["orderby"] is not None:
-            if args['orderby'] == "exam_id":
-                if args["sort"] == "desc":
-                    qry_quiz = qry_quiz.order_by(desc(Quizs.exam_id))
-                else:
-                    qry_quiz = qry_quiz.order_by(Quizs.exam_id)
-            
-        rows = []
-        for row in qry_quiz.limit(args['rp']).offset(offset).all():
-            if row.status == True:
-                row = marshal(row, Quizs.response_fields)
-                rows.append(row)
+            if args["orderby"] is not None:
+                if args['orderby'] == "exam_id":
+                    if args["sort"] == "desc":
+                        qry_quiz = qry_quiz.order_by(desc(Quizs.exam_id))
+                    else:
+                        qry_quiz = qry_quiz.order_by(Quizs.exam_id)
+                
+            rows = []
+            for row in qry_quiz.limit(args['rp']).offset(offset).all():
+                if row.status == True:
+                    row = marshal(row, Quizs.response_fields)
+                    rows.append(row)
 
-        return rows, 200
+            return rows, 200
+
+        else:
+            return {"status": "admin isn't at role super admin and academic admin"}, 404
 
 
 class QuizsAllStatus(Resource):
+    #endpoint for solve CORS
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+
     #endpoint to get all status of livecode
     def get(self):
         qry_quiz = Quizs.query

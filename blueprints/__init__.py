@@ -126,6 +126,7 @@ from blueprints.livecode.resources import bp_livecode
 from blueprints.quiz.resources import bp_quiz
 from blueprints.question_quiz.resources import bp_question_quiz
 from blueprints.choice_quiz.resources import bp_choice_quiz
+from blueprints.correction_exam.resources import bp_correction_exam
 from blueprints.history_subject.resources import bp_history_subject
 from blueprints.history_exam.resources import bp_history_exam
 from blueprints.history_module.resources import bp_history_module
@@ -150,6 +151,7 @@ app.register_blueprint(bp_livecode, url_prefix="/livecode")
 app.register_blueprint(bp_quiz, url_prefix="/quiz")
 app.register_blueprint(bp_question_quiz, url_prefix="/questionquiz")
 app.register_blueprint(bp_choice_quiz, url_prefix="/choicequiz")
+app.register_blueprint(bp_correction_exam, url_prefix="/correctionexam")
 app.register_blueprint(bp_history_subject, url_prefix="/historysubject")
 app.register_blueprint(bp_history_exam, url_prefix="/historyexam")
 app.register_blueprint(bp_history_module, url_prefix="/historymodule")

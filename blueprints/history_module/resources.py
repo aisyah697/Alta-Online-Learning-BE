@@ -54,6 +54,7 @@ class HistoriesModuleResource(Resource):
         parser.add_argument("mentee_id", location="json", required=True)
         parser.add_argument("score", location="json")
         parser.add_argument("is_complete", location="json", type=bool, default=False)
+        parser.add_argument("lock_key", location="json", type=bool, default=False)
         parser.add_argument("status", location="json", type=bool, default=True)
         args = parser.parse_args()
 
@@ -77,6 +78,7 @@ class HistoriesModuleResource(Resource):
             args["mentee_id"],
             args["score"],
             args["is_complete"],
+            args["lock_key"],
             args["status"]
         )
 
@@ -115,7 +117,8 @@ class HistoriesModuleResource(Resource):
         parser.add_argument("module_id", location="json")
         parser.add_argument("mentee_id", location="json")
         parser.add_argument("score", location="json")
-        parser.add_argument("is_complete", location="json", type=bool, default=False)
+        parser.add_argument("is_complete", location="json", type=bool)
+        parser.add_argument("lock_key", location="json", type=bool)
         args = parser.parse_args()
 
         if args['module_id'] is not None:
@@ -129,6 +132,9 @@ class HistoriesModuleResource(Resource):
 
         if args['is_complete'] is not None:
             qry_history_module.is_complete = args['is_complete']
+
+        if args['lock_key'] is not None:
+            qry_history_module.lock_key = args['lock_key']
 
         db.session.commit()
 
