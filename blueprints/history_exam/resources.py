@@ -94,7 +94,7 @@ class HistoriesExamResource(Resource):
 
             return histories_exam, 200
         
-        return "not_found", 404
+        return {"status": "not_found"}, 200
 
     #endpoint for post history exam
     @mentee_required

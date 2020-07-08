@@ -16,8 +16,10 @@ from flask_jwt_extended import (
 from blueprints import admin_required
 
 from .model import Phases
+from ..mentee.model import Mentees
 from ..module.model import Modules
 from ..subject.model import Subjects
+from ..history_phase.model import HistoriesPhase
 
 bp_phase = Blueprint("phase", __name__)
 api = Api(bp_phase)
@@ -69,6 +71,30 @@ class PhasesResource(Resource):
 
             db.session.add(result)
             db.session.commit()
+
+            mentees = Mentees.query
+
+            for mentee in mentees:
+                history_phase = HistoriesPhase.query.filter_by(status=True).filter_by(mentee_id=mentee.id).order_by(desc(HistoriesPhase.id)).first()
+                print("========================", history_phase)
+                if history_phase is not None:
+                    phase = Phases.query
+                    if phase is None:
+                        lock_key = True
+                    else:
+                        lock_key = False
+
+                    result_phase = HistoriesPhase(
+                        result.id,
+                        mentee.id,
+                        None,
+                        None,
+                        lock_key,
+                        True
+                    )
+
+                    db.session.add(result_phase)
+                    db.session.commit()
 
             return marshal(result, Phases.response_fields), 200
 
@@ -136,8 +162,16 @@ class PhasesResource(Resource):
             qry_phase = Phases.query.get(id)
 
             if qry_phase is not None:
-                db.session.delete(qry_phase)
-                db.session.commit()
+                mentees = Mentees.query
+
+                for mentee in mentees:
+                    history_phase = HistoriesPhase.query.filter_by(status=True).filter_by(mentee_id=mentee.id).filter_by(phase_id=id).first()
+                    if history_phase is not None:
+                        db.session.delete(history_phase)
+                        db.session.commit()
+
+                    db.session.delete(qry_phase)
+                    db.session.commit()
 
                 return {"status": "DELETED SUCCESS"}, 200
 
