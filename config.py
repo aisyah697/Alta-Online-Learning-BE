@@ -4,25 +4,25 @@ from datetime import timedelta
 cfg = configparser.ConfigParser()
 cfg.read("config.cfg")
 
-# class config:
-#     SQLALCHEMY_DATABASE_URI = "%s+%s://%s:%s@%s:%s/%s" % (
-#         cfg["database"]["default_connection"],
-#         cfg["mysql"]["driver"],
-#         cfg["mysql"]["user"],
-#         cfg["mysql"]["password"],
-#         cfg["mysql"]["host"],
-#         cfg["mysql"]["port"],
-#         cfg["mysql"]["db"],
-#     )
-#     SQLALCHEMY_TRACK_MODIFICATION = False
-#     JWT_SECRET_KEY = cfg["jwt"]["secret_key"]
-#     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
-#     UPLOAD_MEDIA_AVATAR = "/storage/media/avatar"
-#     UPLOAD_MEDIA_VIDEO = "/storage/media/video"
-#     UPLOAD_MEDIA_PRESENTATION = "/storage/media/presentation"
-#     ACCESS_KEY_ID = cfg["aws"]["key_id"]
-#     ACCESS_SECRET_KEY = cfg["aws"]["secret_key"]
-#     BUCKET_NAME = cfg["aws"]["bucket"]
+class config:
+    SQLALCHEMY_DATABASE_URI = "%s+%s://%s:%s@%s:%s/%s" % (
+        cfg["database"]["default_connection"],
+        cfg["mysql"]["driver"],
+        cfg["mysql"]["user"],
+        cfg["mysql"]["password"],
+        cfg["mysql"]["host"],
+        cfg["mysql"]["port"],
+        cfg["mysql"]["db"],
+    )
+    SQLALCHEMY_TRACK_MODIFICATION = False
+    JWT_SECRET_KEY = cfg["jwt"]["secret_key"]
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
+    UPLOAD_MEDIA_AVATAR = "/storage/media/avatar"
+    UPLOAD_MEDIA_VIDEO = "/storage/media/video"
+    UPLOAD_MEDIA_PRESENTATION = "/storage/media/presentation"
+    ACCESS_KEY_ID = cfg["aws"]["key_id"]
+    ACCESS_SECRET_KEY = cfg["aws"]["secret_key"]
+    BUCKET_NAME = cfg["aws"]["bucket"]
 
 class DevelopmentConfig(config):
     APP_DEBUG = True
@@ -34,7 +34,7 @@ class ProductionConfig(config):
     DEBUG = False
     MAX_BYTES = 10000
 
-class TestingConfig(Config):
+class TestingConfig(config):
     APP_DEBUG = True
     DEBUG = True
     MAX_BYTES = 10000
