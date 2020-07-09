@@ -10,7 +10,7 @@ from flask_cors import CORS
 
 #tambahan
 from werkzeug.contrib.cache import SimpleCache
-cache = SimpleCache
+cache = SimpleCache()
 
 app = Flask(__name__)
 CORS(

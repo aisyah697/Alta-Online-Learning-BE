@@ -34,7 +34,11 @@ class ProductionConfig(config):
     DEBUG = False
     MAX_BYTES = 10000
 
+<<<<<<< HEAD
 class Testing:
+=======
+class TestingConfig(config):
+>>>>>>> 88ad2993b973a9ca66d40ffcbcd2e24386e6a47d
     APP_DEBUG = True
     DEBUG = True
     MAX_BYTES = 10000
