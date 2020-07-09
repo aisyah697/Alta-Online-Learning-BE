@@ -65,6 +65,11 @@ class MenteesResource(Resource):
         parser.add_argument("status", location="form", default="True")
         args = parser.parse_args()
 
+        #check existance username
+        mentee = Mentees.query.filter_by(status=True).filter_by(username=args["username"]).first()
+        if mentee is not None:
+            return {"status": "username existance"}, 404
+
         #check username
         if len(args["username"]) < 6:
             return {"status": "username must be at least 6 character"}, 404
