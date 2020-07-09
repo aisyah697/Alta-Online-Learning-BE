@@ -48,6 +48,7 @@ class HistoriesPhaseResource(Resource):
         parser.add_argument("mentee_id", location="json", required=True)
         parser.add_argument("score", location="json")
         parser.add_argument("certificate", location="json")
+        parser.add_argument("date_certificate", location="json", default=None)
         parser.add_argument("lock_key", location="json", type=bool, default=False)
         parser.add_argument("status", location="json", type=bool, default=True)
         args = parser.parse_args()
@@ -82,6 +83,7 @@ class HistoriesPhaseResource(Resource):
             args["mentee_id"],
             score,
             encoded,
+            args["date_certificate"],
             args["lock_key"],
             args["status"]
         )
@@ -122,6 +124,7 @@ class HistoriesPhaseResource(Resource):
         parser.add_argument("mentee_id", location="json")
         parser.add_argument("score", location="json")
         parser.add_argument("certificate", location="json")
+        parser.add_argument("date_certificate", location="json", default=None)
         parser.add_argument("lock_key", location="json", type=bool)
         args = parser.parse_args()
 
@@ -145,6 +148,9 @@ class HistoriesPhaseResource(Resource):
 
         if args['lock_key'] is not None:
             qry_history_phase.lock_key = args['lock_key']
+
+        if args["date_certificate"] is not None:
+            qry_history_phase.date_certificate = args["date_certificate"]
 
         db.session.commit()
 
