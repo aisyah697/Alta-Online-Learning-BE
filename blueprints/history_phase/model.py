@@ -17,7 +17,6 @@ class HistoriesPhase(db.Model):
     mentee_id = db.Column(db.Integer, db.ForeignKey(Mentees.id, ondelete="CASCADE"), nullable=False)
     score = db.Column(db.Integer)
     certificate = db.Column(db.String(250))
-    date_certificate = db.Column(db.DateTime)
     lock_key = db.Column(db.Boolean)
     status = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
@@ -29,19 +28,17 @@ class HistoriesPhase(db.Model):
         "mentee_id": fields.Integer,
         "score": fields.Integer,
         "certificate": fields.String,
-        "date_certificate": fields.DateTime,
         "lock_key": fields.Boolean,
         "status": fields.Boolean,
         "created_at": fields.DateTime,
         "update_at": fields.DateTime
     }
 
-    def __init__ (self, phase_id, mentee_id, score, certificate, date_certificate, lock_key, status):
+    def __init__ (self, phase_id, mentee_id, score, certificate, lock_key, status):
         self.phase_id = phase_id
         self.mentee_id = mentee_id
         self.score = score
         self.certificate = certificate
-        self.date_certificate = date_certificate
         self.lock_key = lock_key
         self.status = status
 
