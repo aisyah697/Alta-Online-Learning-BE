@@ -20,7 +20,6 @@ def client(request):
 
 @pytest.fixture
 def init_database():
-    print("========================================= cobaaaaaaaaaaaaaaaaaaaa")
     #create database & table
     db.drop_all()
     db.create_all()
@@ -33,8 +32,8 @@ def init_database():
     # hash_pass2 = hashlib.sha512(encoded2).hexdigest()
 
     #inser user data
-    admin = Admins(username='umam12', password=hash_pass, full_name='Ismanul Umam', role='super', email='umam@alterra.id', address='Malang, East Java', phone=0856473242, place_birth='Malang', date_birth='3 Maret 1993', avatar='https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/ddaf4321fe364955899e2f4f37170523_8i9fvU3+-+Imgur.jpg', github='https://github.com/ahmadajip55', description="Lorem Ipsum Doler", salt=salt, status=True)
-    mentee = Mentees(username="rosliani12", password=hash_pass, full_name="Yopi Ragil", email="yopi@alterra.id", address="Klaten, East Java", phone=0856473241, place_birth="Klaten", date_birth="2 Maret 1995", avatar="https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/8023d583899a4ed4a22bd01e35777525_DSC02275.JPG", background_education="Fisika", github="https://github.com/ahmadajip5", description="Lorem Ipsum Doler 2", salt=salt, status=True)
+    admin = Admins(username='umam12', password=hash_pass, full_name='Ismanul Umam', role='super', email='pangestuahmadaji@gmail.com', address='Malang, East Java', phone='0856473242', place_birth='Malang', date_birth='3 Maret 1993', avatar='https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/ddaf4321fe364955899e2f4f37170523_8i9fvU3+-+Imgur.jpg', github='https://github.com/ahmadajip55', description="Lorem Ipsum Doler", salt=salt, status=True)
+    mentee = Mentees(username="rosliani12", password=hash_pass, full_name="Yopi Ragil", email="yopi@alterra.id", address="Klaten, East Java", phone='0856473241', place_birth="Klaten", date_birth="2 Maret 1995", avatar="https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/8023d583899a4ed4a22bd01e35777525_DSC02275.JPG", background_education="Fisika", github="https://github.com/ahmadajip5", description="Lorem Ipsum Doler 2", salt=salt, status=True)
     db.session.add(admin)
     db.session.add(mentee)
     db.session.commit()    
@@ -127,7 +126,7 @@ def init_database():
     # db.session.add(correction_exam)
     # db.session.commit()
 
-    yield db
+    # yield db
     # db.drop_all()
 
 def create_token_admin():
@@ -139,7 +138,7 @@ def create_token_admin():
         }
 
         req = call_client(request)
-        res = req.post('/auth', data=json.dumps(data))
+        res = req.post('/auth/admin', data=json.dumps(data))
 
         res_json = json.loads(res.data)
         logging.warning('RESULT:%s', res_json)
@@ -161,7 +160,7 @@ def create_token_mentee():
         }
 
         req = call_client(request)
-        res = req.post('/auth', data=json.dumps(data))
+        res = req.post('/auth/mentee', data=json.dumps(data), content)
 
         res_json = json.loads(res.data)
         logging.warning('RESULT:%s', res_json)
