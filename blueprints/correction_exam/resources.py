@@ -3,6 +3,8 @@ from flask import Blueprint
 from flask_restful import Resource, Api, reqparse, marshal, inputs
 from blueprints import db, app
 from sqlalchemy import desc
+from datetime import datetime
+import calendar
 from flask_jwt_extended import (
     JWTManager,
     get_jwt_identity,
@@ -219,6 +221,9 @@ class CorrectionsExamSubmit(Resource):
         qry_history_exam_of_mentee = HistoriesExam.query.filter_by(status=True).filter_by(exam_id=exam_id).filter_by(mentee_id=claims["id"]).all()
         sum_history_exam_of_mentee = len(qry_history_exam_of_mentee)
 
+        if qry_history_exam.score == None:
+            qry_history_exam.score = 0
+
         #fill result of exam to history_subject
         if qry_history_exam.score >= 80:
             qry_history_subject.score = qry_history_exam.score
@@ -280,20 +285,20 @@ class CorrectionsExamSubmit(Resource):
                         if index_subject == 0 and index_module == 0 and index_phase == 0:
                             history_subject.is_complete = False
                             history_subject.lock_key = True
-                            history_subject.score = 0
-                            history_subject.time_of_exam = 0
+                            history_subject.score = None
+                            history_subject.time_of_exam = None
                         else:
                             history_subject.is_complete = False
                             history_subject.lock_key = False
-                            history_subject.score = 0
-                            history_subject.time_of_exam = 0
+                            history_subject.score = None
+                            history_subject.time_of_exam = None
 
             db.session.commit()
 
-            respond = {"status" : "sudah 3x, ulangi dari awal"}
+            respond = {"status" : "repeat_early", "score": qry_history_exam.score}
 
         elif sum_history_exam_of_mentee < 3 and qry_history_exam.score < 80:
-            respond = {"status" : "belum lolos, coba lagi"}
+            respond = {"status" : "repeat_subject", "score": qry_history_exam.score}
 
         elif qry_history_exam.score > 80:
             #initial respond
@@ -323,7 +328,7 @@ class CorrectionsExamSubmit(Resource):
                         #make lock_key true when is_complete of subject_id in the before is True
                         if history_subject.is_complete == True and index_subject != (len(qry_history_subject)-1):
                             qry_history_subject[index_subject+1].lock_key = True
-                            respond_subject = {"status" : "lolos subject ini"}
+                            respond_subject = {"status" : "subject", "score": qry_history_exam.score}
 
                     #change lock_key in modul
                     if len(histories_subject) != 0:
@@ -345,13 +350,16 @@ class CorrectionsExamSubmit(Resource):
                             if index_module != (len(qry_history_module)-1):
                                 qry_history_module[index_module+1].lock_key = True
                             
-                            respond_modul = {"status" : "lolos modul ini"}
+                            respond_modul = {"status" : "module", "score": score}
 
                 #change lock key in phase
                 if len(histories_module) != 0:
                     phase_last_modul = histories_module[-1]
                     if phase_last_modul.is_complete == True:
-                        qry_history_phase[index_phase].certificate = "certificate-" + str(index_phase) + "-" + str(claims["full_name"])
+                        date_number = datetime.now().strftime('%d-%m-%y')
+                        name_mentee = str(claims["full_name"]).replace(" ", "-")
+                        qry_history_phase[index_phase].certificate = "alta/0" + str(index_phase+1) + "/" + str(date_number) + "/" + name_mentee
+                        qry_history_phase[index_phase].date_certificate = datetime.now()
                         #input score in phase
                         sum_module = len(histories_module)
                         #calculate score
@@ -367,7 +375,7 @@ class CorrectionsExamSubmit(Resource):
                         if index_phase != (len(qry_history_phase)-1):
                             qry_history_phase[index_phase+1].lock_key = True
 
-                        respond_phase = {"status" : "lolos phase ini"}
+                        respond_phase = {"status" : "phase", "score": qry_history_exam.score, "certificate": qry_history_phase[index_phase].certificate, "name": str(claims["full_name"])}
 
             db.session.commit()
 
@@ -378,9 +386,6 @@ class CorrectionsExamSubmit(Resource):
             elif respond_subject != "":
                 respond = respond_subject
 
-        qry_history_subject = HistoriesSubject.query.filter_by(status=True).filter_by(subject_id=qry_exam.subject_id).filter_by(mentee_id=claims["id"]).first()
-
-        # return marshal(qry_history_subject, HistoriesSubject.response_fields), 200
         return respond, 200
 
 api.add_resource(CorrectionsExamResource, "", "/<id>")
