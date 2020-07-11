@@ -172,9 +172,9 @@ class ChoicesAltatestAll(Resource):
             if args["orderby"] is not None:
                 if args['orderby'] == "choice":
                     if args["sort"] == "desc":
-                        qry_choice_altatest = qry_choice_altatest.order_by(desc(ChoicesAltatest.question))
+                        qry_choice_altatest = qry_choice_altatest.order_by(desc(ChoicesAltatest.choice))
                     else:
-                        qry_choice_altatest = qry_choice_altatest.order_by(ChoicesAltatest.question)
+                        qry_choice_altatest = qry_choice_altatest.order_by(ChoicesAltatest.choice)
                 elif args["orderby"] == "created_at":
                     if args["sort"] == "desc":
                         qry_choice_altatest = qry_choice_altatest.order_by(desc(ChoicesAltatest.created_at))

@@ -315,7 +315,8 @@ class CorrectionsExamSubmit(Resource):
                     if module.phase_id == phase:
                         histories_module.append(history_module)
                 
-                for index_module, history_module in enumerate(qry_history_module):
+                # for index_module, history_module in enumerate(qry_history_module):
+                for index_module, history_module in enumerate(histories_module):
                     module = history_module.module_id
                     qry_history_subject = HistoriesSubject.query.filter_by(status=True).filter_by(mentee_id=claims["id"]).all()
                     histories_subject = []
@@ -324,7 +325,8 @@ class CorrectionsExamSubmit(Resource):
                         if subject.module_id == module:
                             histories_subject.append(history_subject)
                     
-                    for index_subject, history_subject in enumerate(qry_history_subject):
+                    # for index_subject, history_subject in enumerate(qry_history_subject):
+                    for index_subject, history_subject in enumerate(histories_subject):
                         #make lock_key true when is_complete of subject_id in the before is True
                         if history_subject.is_complete == True and index_subject != (len(qry_history_subject)-1):
                             qry_history_subject[index_subject+1].lock_key = True

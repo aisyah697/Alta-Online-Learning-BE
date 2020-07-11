@@ -310,7 +310,8 @@ class HistoriesModuleMentee(Resource):
         qry_history_module = HistoriesModule.query.filter_by(mentee_id=claims["id"]).first()
 
         if qry_history_module is None:
-            modules = Modules.query
+            phase = Phases.query[0]
+            modules = Modules.query.filter_by(phase_id=phase.id).all()
 
             history_modules = []
             for index, module in enumerate(modules):
@@ -338,6 +339,29 @@ class HistoriesModuleMentee(Resource):
 
                 result = marshal(result, HistoriesModule.response_fields)
                 history_modules.append(result)
+
+            modules = Modules.query
+            for index, module in enumerate(modules):
+                if module.phase_id != phase.id:
+                    score = None
+                    is_complete = False
+                    lock_key = False
+                    status = True
+                    
+                    result = HistoriesModule(
+                        module.id,
+                        claims["id"],
+                        score,
+                        is_complete,
+                        lock_key,
+                        status
+                    )
+
+                    db.session.add(result)
+                    db.session.commit()
+
+                    result = marshal(result, HistoriesModule.response_fields)
+                    history_modules.append(result)
 
             return history_modules, 200
         

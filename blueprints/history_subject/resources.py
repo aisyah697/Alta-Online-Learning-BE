@@ -17,6 +17,7 @@ from blueprints import mentee_required
 
 from .model import HistoriesSubject
 from ..mentee.model import Mentees
+from ..phase.model import Phases
 from ..module.model import Modules
 from ..subject.model import Subjects
 from ..file_subject.model import FilesSubject
@@ -311,7 +312,9 @@ class HistoriesSubjectMentee(Resource):
         qry_history_subject = HistoriesSubject.query.filter_by(mentee_id=claims["id"]).first()
 
         if qry_history_subject is None:
-            subjects = Subjects.query
+            phase = Phases.query[0]
+            module = Modules.query.filter_by(phase_id=phase.id).all()[0]
+            subjects = Subjects.query.filter_by(module_id=module.id).all()
 
             history_subjects = []
             for index, subject in enumerate(subjects):
@@ -341,6 +344,31 @@ class HistoriesSubjectMentee(Resource):
 
                 result = marshal(result, HistoriesSubject.response_fields)
                 history_subjects.append(result)
+
+            subjects = Subjects.query
+            for index, subject in enumerate(subjects):
+                if subject.module_id != module.id:
+                    score = None
+                    time_of_exam = None
+                    is_complete = False
+                    lock_key = False
+                    status = True
+                    
+                    result = HistoriesSubject(
+                        subject.id,
+                        claims["id"],
+                        score,
+                        time_of_exam,
+                        is_complete,
+                        lock_key,
+                        status
+                    )
+
+                    db.session.add(result)
+                    db.session.commit()
+
+                    result = marshal(result, HistoriesSubject.response_fields)
+                    history_subjects.append(result)
 
             return history_subjects, 200
         

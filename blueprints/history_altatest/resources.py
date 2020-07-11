@@ -359,8 +359,6 @@ class HistoriesCorrectionQuestion(Resource):
         qry_question = DetailsAltatest.query.filter_by(altatest_id=qry_altatest.id).filter_by(status=True).all()
         sum_question = len(qry_question)
 
-        print ("=====================", sum_question)
-        
         #determine answer true
         sum_true = 0
         qry_correction_altatest = CorrectionsAltatest.query.filter_by(status=True).filter_by(history_altatest_id=args["history_altatest_id"]).all()
