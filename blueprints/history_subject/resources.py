@@ -17,6 +17,7 @@ from blueprints import mentee_required
 
 from .model import HistoriesSubject
 from ..mentee.model import Mentees
+from ..phase.model import Phases
 from ..module.model import Modules
 from ..subject.model import Subjects
 from ..file_subject.model import FilesSubject
@@ -48,7 +49,7 @@ class HistoriesSubjectResource(Resource):
             return {"status": "Id history subject not found"}, 404
 
         if qry_history_subject.mentee_id != mentee_id:
-            return {"status": "mentee_id in token and history subject isn't match"}, 403
+            return {"status": "mentee_id in token and history subject isn't match"}, 404
 
         if qry_history_subject is not None:
             qry_exam = Exams.query.filter_by(subject_id=qry_history_subject.subject_id).first()
@@ -176,7 +177,7 @@ class HistoriesSubjectResource(Resource):
 
             return {"status": "DELETED SUCCESS"}, 200
         
-        return {"status": "ID NOT FOUND"}, 200
+        return {"status": "ID NOT FOUND"}, 404
 
 
 class HistoriesSubjectAll(Resource):
@@ -311,7 +312,7 @@ class HistoriesSubjectMentee(Resource):
         qry_history_subject = HistoriesSubject.query.filter_by(mentee_id=claims["id"]).first()
 
         if qry_history_subject is None:
-            subjects = Subjects.query
+            subjects = Subjects.query.filter_by(status=True).all()
 
             history_subjects = []
             for index, subject in enumerate(subjects):
@@ -341,7 +342,7 @@ class HistoriesSubjectMentee(Resource):
 
                 result = marshal(result, HistoriesSubject.response_fields)
                 history_subjects.append(result)
-
+            
             return history_subjects, 200
         
         else:

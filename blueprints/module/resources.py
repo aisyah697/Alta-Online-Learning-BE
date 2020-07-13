@@ -477,7 +477,7 @@ class ModuleNestedAll(Resource):
             parser = reqparse.RequestParser()
             parser.add_argument('p', type=int, location='args', default=1)
             parser.add_argument('rp', type=int, location='args', default=25)
-            parser.add_argument('orderby', location='args', help='invalid status', choices=("id", "created_at"))
+            parser.add_argument('orderby', location='args', help='invalid status', choices=("admin_id", "phase_id", "name"))
             parser.add_argument('sort', location='args', help='invalid status', choices=("asc", "desc"))
             args = parser.parse_args()
 
@@ -486,16 +486,21 @@ class ModuleNestedAll(Resource):
             qry_module = Modules.query
 
             if args["orderby"] is not None:
-                if args['orderby'] == "id":
+                if args['orderby'] == "admin_id":
                     if args["sort"] == "desc":
-                        qry_module = qry_module.order_by(desc(Modules.id))
+                        qry_module = qry_module.order_by(desc(Modules.admin_id))
                     else:
-                        qry_module = qry_module.order_by(Modules.id)
-                elif args["orderby"] == "created_at":
+                        qry_module = qry_module.order_by(Modules.admin_id)
+                elif args["orderby"] == "phase_id":
                     if args["sort"] == "desc":
-                        qry_module = qry_module.order_by(desc(Modules.created_at))
+                        qry_module = qry_module.order_by(desc(Modules.phase_id))
                     else:
-                        qry_module = qry_module.order_by(Modules.created_at)
+                        qry_module = qry_module.order_by(Modules.phase_id)
+                elif args["orderby"] == 'name':
+                    if args["sort"] == "desc":
+                        qry_module = qry_module.order_by(desc(Modules.name))
+                    else:
+                        qry_module = qry_module.order_by(Modules.name)
 
             modules = []
             for module in qry_module.limit(args['rp']).offset(offset).all():

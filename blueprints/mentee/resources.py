@@ -322,9 +322,9 @@ class MenteesResource(Resource):
     #endpoint for delete mentee by id
     def delete(self, id):
         mentee = Mentees.query.get(id)
-        filename = mentee.avatar
         
         if mentee is not None:
+            filename = mentee.avatar
             if filename is not None:
                 #remove avatar in storage
                 filename = "avatar/"+filename.split("/")[-1]

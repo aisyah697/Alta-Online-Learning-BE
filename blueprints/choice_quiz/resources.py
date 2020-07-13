@@ -179,9 +179,9 @@ class ChoicesQuizAll(Resource):
             if args["orderby"] is not None:
                 if args['orderby'] == "choice":
                     if args["sort"] == "desc":
-                        qry_choice_quiz = qry_choice_quiz.order_by(desc(ChoicesQuiz.question))
+                        qry_choice_quiz = qry_choice_quiz.order_by(desc(ChoicesQuiz.choice))
                     else:
-                        qry_choice_quiz = qry_choice_quiz.order_by(ChoicesQuiz.question)
+                        qry_choice_quiz = qry_choice_quiz.order_by(ChoicesQuiz.choice)
                 elif args["orderby"] == "created_at":
                     if args["sort"] == "desc":
                         qry_choice_quiz = qry_choice_quiz.order_by(desc(ChoicesQuiz.created_at))

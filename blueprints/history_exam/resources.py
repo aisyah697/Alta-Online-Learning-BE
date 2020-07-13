@@ -162,7 +162,7 @@ class HistoriesExamResource(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument("exam_id", location="json")
         parser.add_argument("mentee_id", location="json")
-        parser.add_argument("is_complete", location="json")
+        parser.add_argument("is_complete", location="json", type=bool)
         parser.add_argument("score", location="json")
         args = parser.parse_args()
 
@@ -192,7 +192,7 @@ class HistoriesExamResource(Resource):
 
             return {"status": "DELETED SUCCESS"}, 200
         
-        return {"status": "ID NOT FOUND"}, 200
+        return {"status": "ID NOT FOUND"}, 404
 
 
 class HistoriesExamAll(Resource):

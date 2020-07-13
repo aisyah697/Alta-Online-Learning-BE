@@ -5,14 +5,6 @@ from flask import Blueprint
 from flask_restful import Resource, Api, reqparse, marshal, inputs
 from blueprints import db, app
 from sqlalchemy import desc
-# import hashlib, uuid 
-# from flask_jwt_extended import (
-#     JWTManager,
-#     create_access_token,
-#     get_jwt_identity,
-#     jwt_required,
-#     get_jwt_claims,
-# )
 
 from .model import RequirementsModule
 
@@ -100,10 +92,14 @@ class RequirementsModuleResource(Resource):
             
             return {"status": "DELETED SUCCESS"}, 200
         
-        return {"status": "ID NOT FOUND"}, 200
+        return {"status": "ID NOT FOUND"}, 404
 
 
 class RequirementsModuleAll(Resource):
+    #for solve cors
+    def option(self, id=None):
+        return {"status": "ok"}, 200
+
     #endpoint to get all and sort by modul_id
     def get(self):
         parser = reqparse.RequestParser()

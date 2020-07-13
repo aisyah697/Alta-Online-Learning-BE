@@ -33,3 +33,23 @@ class ProductionConfig(config):
     APP_DEBUG = False
     DEBUG = False
     MAX_BYTES = 10000
+
+class TestingConfig(config):
+    APP_DEBUG = True
+    DEBUG = True
+    MAX_BYTES = 10000
+    SQLALCHEMY_DATABASE_URI = '%s+%s://%s:%s@%s:%s/%s_testing' % (
+        cfg['database']['default_connection'],
+        cfg['mysql']['driver'],
+        cfg['mysql']['user'],
+        cfg['mysql']['password'],
+        cfg['mysql']['host'],
+        cfg['mysql']['port'],
+        cfg['mysql']['db'],
+    )
+    SQLALCHEMY_TRACK_MODIFICATION = False
+    JWT_SECRET_KEY = cfg['jwt']['secret_key']
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
+    ACCESS_KEY_ID = cfg["aws"]["key_id"]
+    ACCESS_SECRET_KEY = cfg["aws"]["secret_key"]
+    BUCKET_NAME = cfg["aws"]["bucket"]

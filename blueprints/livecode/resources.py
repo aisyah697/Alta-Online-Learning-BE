@@ -65,7 +65,7 @@ class LivecodesResource(Resource):
             qry_livecode = Livecodes.query.filter_by(exam_id=args["exam_id"]).first()
 
             if qry_livecode is not None:
-                return {"status": "Livecode is already there for this subject"}
+                return {"status": "Livecode is already there for this subject"}, 404
 
             #check exam_id that mentioned is in database or not
             qry_exam = Exams.query.filter_by(id=args["exam_id"]).first()

@@ -8,6 +8,10 @@ from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_claims
 from flask_script import Manager
 from flask_cors import CORS
 
+#tambahan
+from werkzeug.contrib.cache import SimpleCache
+cache = SimpleCache()
+
 app = Flask(__name__)
 CORS(
     app,

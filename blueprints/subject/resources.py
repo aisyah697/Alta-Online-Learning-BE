@@ -316,7 +316,7 @@ class SubjectNestedAll(Resource):
             parser = reqparse.RequestParser()
             parser.add_argument('p', type=int, location='args', default=1)
             parser.add_argument('rp', type=int, location='args', default=25)
-            parser.add_argument('orderby', location='args', help='invalid status', choices=("id", "created_at"))
+            parser.add_argument('orderby', location='args', help='invalid status', choices=("name", "module_id"))
             parser.add_argument('sort', location='args', help='invalid status', choices=("asc", "desc"))
             args = parser.parse_args()
 
@@ -325,16 +325,16 @@ class SubjectNestedAll(Resource):
             qry_subject = Subjects.query
 
             if args["orderby"] is not None:
-                if args['orderby'] == "id":
+                if args['orderby'] == "name":
                     if args["sort"] == "desc":
-                        qry_module = qry_module.order_by(desc(Modules.id))
+                        qry_subject = qry_subject.order_by(desc(Subjects.name))
                     else:
-                        qry_module = qry_module.order_by(Modules.id)
-                elif args["orderby"] == "created_at":
+                        qry_subject = qry_subject.order_by(Subjects.name)
+                elif args['orderby'] == "module_id":
                     if args["sort"] == "desc":
-                        qry_module = qry_module.order_by(desc(Modules.created_at))
+                        qry_subject = qry_subject.order_by(desc(Subjects.module_id))
                     else:
-                        qry_module = qry_module.order_by(Modules.created_at)
+                        qry_subject = qry_subject.order_by(Subjects.module_id)
 
             subjects = []
             for subject in qry_subject.limit(args['rp']).offset(offset).all():

@@ -1,1 +1,0 @@
-[2020-07-09 08:21:28,921]{/home/alta3/Music/Final Project/Alta-Online-Learning-BE/blueprints/__init__.py:90} WARNING - REQUEST_LOG	{"method": "POST", "code": "200 OK", "uri": "/correctionexam/submit?", "request": {"history_exam_id": 30}, "response": {"status": "phase", "score": 97, "certificate": "alta/01/09-07-20/Aisyah-Putri-Utami", "name": "Aisyah Putri Utami"}}
