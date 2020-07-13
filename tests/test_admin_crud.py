@@ -404,7 +404,7 @@ class TestAdminCrud():
                         content_type = 'multipart/form-data')
         res_json = json.loads(res.data)
         assert res.status_code == 200
-    
+
     def test_get_admin_orderby_username(self, client, init_database):
         token = create_token_admin()
         res = client.get('/admin',
