@@ -134,7 +134,9 @@ def init_database():
     db.session.commit()
 
     choice_quiz = ChoicesQuiz (question_id = 1, choice="jaya wijaya", is_correct=True, status=True)
+    choice_quiz1 = ChoicesQuiz (question_id = 1, choice="merapi", is_correct=False, status=True)
     db.session.add(choice_quiz)
+    db.session.add(choice_quiz1)
     db.session.commit()
 
     altatest = Altatests(question_sum = 1, status=True)
@@ -183,8 +185,8 @@ def init_database():
     db.session.add(correction_exam)
     db.session.commit()
 
-    # yield db
-    # db.drop_all()
+    yield db
+    db.drop_all()
 
 def create_token_admin():
     token = cache.get("test-token-admin")

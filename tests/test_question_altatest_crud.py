@@ -109,31 +109,21 @@ class TestQuestionAltatestCrud():
         res_json=json.loads(res.data)
         assert res.status_code==200
 
-    # def test_question_altatest_get_all_status_true_question_asc(self, client, init_database):
-    #     token = create_token_admin()
-    #     data={
-    #         'orderby': 'question', 
-    #         'sort': 'asc'
-    #     }
-    #     res = client.get('/questionaltatest', headers={'Authorization': 'Bearer ' + token}, query_string=data, content_type='application/json')
-    #     res_json=json.loads(res.data)
-    #     assert res.status_code==200
+    def test_question_altatest_get_all_status_true_question_asc(self, client, init_database):
+        token = create_token_admin()
+        data={
+            'orderby': 'question', 
+            'sort': 'asc'
+        }
+        res = client.get('/questionaltatest', headers={'Authorization': 'Bearer ' + token}, query_string=data, content_type='application/json')
+        res_json=json.loads(res.data)
+        assert res.status_code==200
 
     def test_question_altatest_get_all_status_true_createdat_desc(self, client, init_database):
         token = create_token_admin()
         data={
             'orderby': 'created_at', 
             'sort': 'desc'
-        }
-        res = client.get('/questionaltatest', headers={'Authorization': 'Bearer ' + token}, query_string=data, content_type='application/json')
-        res_json=json.loads(res.data)
-        assert res.status_code==200
-
-    def test_question_altatest_get_all_status_true_question_asc(self, client, init_database):
-        token = create_token_admin()
-        data={
-            'orderby': 'created_at', 
-            'sort': 'asc'
         }
         res = client.get('/questionaltatest', headers={'Authorization': 'Bearer ' + token}, query_string=data, content_type='application/json')
         res_json=json.loads(res.data)
