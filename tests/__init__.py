@@ -67,16 +67,22 @@ def init_database():
 
     mentee_1 = Mentees(username="rosliani12", password=hash_pass, full_name="Yopi Ragil", email="yopi@gmail.com", address="Klaten, East Java", phone="0856473241", place_birth="Klaten", date_birth="2 Maret 1995", avatar="https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/8023d583899a4ed4a22bd01e35777525_DSC02275.JPG", background_education="Fisika", github="https://github.com/ahmadajip5", description="Lorem Ipsum Doler 2", salt=salt, status=True)
     mentee_2 = Mentees(username="aisyah12", password=hash_pass, full_name="Aisyah", email="yopi@gmail.com", address="Klaten, East Java", phone="08564732412", place_birth="Klaten", date_birth="2 Maret 1995", avatar="https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/8023d583899a4ed4a22bd01e35777525_DSC02275.JPG", background_education="Fisika", github="https://github.com/ahmadajip5", description="Lorem Ipsum Doler 2", salt=salt, status=True)
+    mentee_3 = Mentees(username="shofi12", password=hash_pass, full_name="Aisyah", email="yopi@gmail.com", address="Klaten, East Java", phone="08564732412", place_birth="Klaten", date_birth="2 Maret 1995", avatar="https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/8023d583899a4ed4a22bd01e35777525_DSC02275.JPG", background_education="Fisika", github="https://github.com/ahmadajip5", description="Lorem Ipsum Doler 2", salt=salt, status=True)
     db.session.add(mentee_1)
     db.session.add(mentee_2)
+    db.session.add(mentee_3)
     db.session.commit()    
     
-    phase = Phases(name="phase 1", description="coba deskripsi", status=True)
-    db.session.add(phase)
+    phase_1 = Phases(name="phase 1", description="coba deskripsi", status=True)
+    phase_2 = Phases(name="phase 2", description="coba deskripsi", status=True)
+    db.session.add(phase_1)
+    db.session.add(phase_2)
     db.session.commit()
 
-    modul = Modules(admin_id= 1, phase_id=1, name="Python", description="coba deskripsi modul", image="www.module.jsdhsd.jpg", status=True)
-    db.session.add(modul)
+    modul_1 = Modules(admin_id= 1, phase_id=1, name="Python", description="coba deskripsi modul", image="www.module.jsdhsd.jpg", status=True)
+    modul_2 = Modules(admin_id= 1, phase_id=1, name="CSS", description="coba deskripsi modul", image="www.module.jsdhsd.jpg", status=True)
+    db.session.add(modul_1)
+    db.session.add(modul_2)
     db.session.commit()
 
     review_module = ReviewsModule(mentee_id=1, module_id=1, content="ini contentnya", score=1, status=True)
@@ -89,24 +95,38 @@ def init_database():
 
     subject_1 = Subjects(module_id= 1, name="algorithm", description="coba deskripsi subject", quesioner="www.ksjjsd.com", status=True)
     subject_2 = Subjects(module_id= 1, name="structure data", description="coba deskripsi subject", quesioner="www.ksjjsd.com", status=True)
+    subject_3 = Subjects(module_id= 1, name="looping", description="coba deskripsi subject", quesioner="www.ksjjsd.com", status=True)
+    subject_4 = Subjects(module_id= 1, name="recursive", description="coba deskripsi subject", quesioner="www.ksjjsd.com", status=True)
+    subject_5 = Subjects(module_id= 1, name="dynamic_programming", description="coba deskripsi subject", quesioner="www.ksjjsd.com", status=True)
     db.session.add(subject_1)
     db.session.add(subject_2)
+    db.session.add(subject_3)
+    db.session.add(subject_4)
+    db.session.add(subject_5)
     db.session.commit()
 
     file_subject = FilesSubject(subject_id=1, name="nama file", content_file="www.link.com.jpg", category_file="presentation", status=True )
     db.session.add(file_subject)
     db.session.commit()
 
-    exam = Exams(subject_id=1, type_exam="quiz", status= True)
-    db.session.add(exam)
+    exam_1 = Exams(subject_id=1, type_exam="quiz", status= True)
+    exam_2 = Exams(subject_id=2, type_exam="quiz", status= True)
+    exam_3 = Exams(subject_id=3, type_exam="quiz", status= True)
+    exam_4 = Exams(subject_id=4, type_exam="livecode", status= True)
+    db.session.add(exam_1)
+    db.session.add(exam_2)
+    db.session.add(exam_3)
+    db.session.add(exam_4)
     db.session.commit()
 
-    live_code = Livecodes(exam_id=1, name="ujian", description="deskripsi ujiannya", link="www.linknya.ini", status=True)
+    live_code = Livecodes(exam_id=4, name="ujian", description="deskripsi ujiannya", link="www.linknya.ini", status=True)
     db.session.add(live_code)
     db.session.commit()
 
-    quiz = Quizs(exam_id=1, name="ini quiznya", description="deskripsinya ini", status=True)
-    db.session.add(quiz)
+    quiz_1 = Quizs(exam_id=1, name="ini quiznya", description="deskripsinya ini", status=True)
+    quiz_2 = Quizs(exam_id=2, name="ini quiznya", description="deskripsinya ini", status=True)
+    db.session.add(quiz_1)
+    db.session.add(quiz_2)
     db.session.commit()
 
     question_quiz = QuestionsQuiz(quiz_id=1, question="coba sebutkan apa saja?", status= True)
@@ -141,7 +161,7 @@ def init_database():
     db.session.add(correction_altatest)
     db.session.commit()
 
-    history_phase = HistoriesPhase(phase_id=1, mentee_id=1, score=85, certificate="alta-phase-1-aji-20-10-20", date_certificate=datetime.now(),lock_key=True, status=True)
+    history_phase = HistoriesPhase(phase_id=1, mentee_id=1, score=85, certificate=None, date_certificate=datetime.now(),lock_key=True, status=True)
     db.session.add(history_phase)
     db.session.commit()
 
@@ -153,8 +173,10 @@ def init_database():
     db.session.add(history_subject)
     db.session.commit()
 
-    history_exam = HistoriesExam(exam_id=1, mentee_id=1, score=90, is_complete=True, status=True)
-    db.session.add(history_exam)
+    history_exam_1 = HistoriesExam(exam_id=1, mentee_id=1, score=90, is_complete=True, status=True)
+    history_exam_2 = HistoriesExam(exam_id=4, mentee_id=2, score=90, is_complete=True, status=True)
+    db.session.add(history_exam_1)
+    db.session.add(history_exam_2)
     db.session.commit()
 
     correction_exam = CorrectionsExam(history_exam_id=1, question_quiz_id=1, answer_quiz_id=1, is_correct=True, status=True)
@@ -291,6 +313,50 @@ def create_token_mentee_user():
         assert res.status_code == 200
 
         cache.set('test-token-mentee-user', res_json['token'], timeout=60)
+        return res_json['token']
+    
+    else:
+        return token
+
+def create_token_mentee_user_1():
+    token = cache.get("test-token-mentee-user-1")
+    if token is None:
+        data = {
+            "username": "shofi12",
+            "password": "password"
+        }
+
+        req = call_client(request)
+        res = req.post('/auth/mentee', data=json.dumps(data), content_type="application/json")
+
+        res_json = json.loads(res.data)
+        logging.warning('RESULT:%s', res_json)
+
+        assert res.status_code == 200
+
+        cache.set('test-token-mentee-user-1', res_json['token'], timeout=60)
+        return res_json['token']
+    
+    else:
+        return token
+
+def create_token_mentee_user_not_found():
+    token = cache.get("test-token-mentee-user-not_found")
+    if token is None:
+        data = {
+            "username": "notfound",
+            "password": "password"
+        }
+
+        req = call_client(request)
+        res = req.post('/auth/mentee', data=json.dumps(data), content_type="application/json")
+
+        res_json = json.loads(res.data)
+        logging.warning('RESULT:%s', res_json)
+
+        assert res.status_code == 200
+
+        cache.set('test-token-mentee-user-not_found', res_json['token'], timeout=60)
         return res_json['token']
     
     else:

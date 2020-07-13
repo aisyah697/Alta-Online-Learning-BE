@@ -38,7 +38,7 @@ class TestModuleCrud():
         token = create_token_admin()
         data={
             "admin_id": 1,
-            "phase_id": 2,
+            "phase_id": 100,
             "name": "Python X",
             "description": "Lorem Ipsum dolor dolor",
             "image": "wwww.djidjsidj.pdf",

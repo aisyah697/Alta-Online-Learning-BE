@@ -49,7 +49,7 @@ class HistoriesSubjectResource(Resource):
             return {"status": "Id history subject not found"}, 404
 
         if qry_history_subject.mentee_id != mentee_id:
-            return {"status": "mentee_id in token and history subject isn't match"}, 403
+            return {"status": "mentee_id in token and history subject isn't match"}, 404
 
         if qry_history_subject is not None:
             qry_exam = Exams.query.filter_by(subject_id=qry_history_subject.subject_id).first()
@@ -177,7 +177,7 @@ class HistoriesSubjectResource(Resource):
 
             return {"status": "DELETED SUCCESS"}, 200
         
-        return {"status": "ID NOT FOUND"}, 200
+        return {"status": "ID NOT FOUND"}, 404
 
 
 class HistoriesSubjectAll(Resource):
@@ -312,9 +312,7 @@ class HistoriesSubjectMentee(Resource):
         qry_history_subject = HistoriesSubject.query.filter_by(mentee_id=claims["id"]).first()
 
         if qry_history_subject is None:
-            phase = Phases.query[0]
-            module = Modules.query.filter_by(phase_id=phase.id).all()[0]
-            subjects = Subjects.query.filter_by(module_id=module.id).all()
+            subjects = Subjects.query.filter_by(status=True).all()
 
             history_subjects = []
             for index, subject in enumerate(subjects):
@@ -344,32 +342,7 @@ class HistoriesSubjectMentee(Resource):
 
                 result = marshal(result, HistoriesSubject.response_fields)
                 history_subjects.append(result)
-
-            subjects = Subjects.query
-            for index, subject in enumerate(subjects):
-                if subject.module_id != module.id:
-                    score = None
-                    time_of_exam = None
-                    is_complete = False
-                    lock_key = False
-                    status = True
-                    
-                    result = HistoriesSubject(
-                        subject.id,
-                        claims["id"],
-                        score,
-                        time_of_exam,
-                        is_complete,
-                        lock_key,
-                        status
-                    )
-
-                    db.session.add(result)
-                    db.session.commit()
-
-                    result = marshal(result, HistoriesSubject.response_fields)
-                    history_subjects.append(result)
-
+            
             return history_subjects, 200
         
         else:

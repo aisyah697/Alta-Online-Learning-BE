@@ -52,7 +52,7 @@ class HistoriesModuleResource(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument("module_id", location="json", required=True)
         parser.add_argument("mentee_id", location="json", required=True)
-        parser.add_argument("score", location="json")
+        parser.add_argument("score", location="json", default=None)
         parser.add_argument("is_complete", location="json", type=bool, default=False)
         parser.add_argument("lock_key", location="json", type=bool, default=False)
         parser.add_argument("status", location="json", type=bool, default=True)
@@ -150,7 +150,7 @@ class HistoriesModuleResource(Resource):
 
             return {"status": "DELETED SUCCESS"}, 200
         
-        return {"status": "ID NOT FOUND"}, 200
+        return {"status": "ID NOT FOUND"}, 404
 
 
 class HistoriesModuleAll(Resource):
@@ -265,7 +265,7 @@ class HistoriesModuleMentee(Resource):
                         
                         questions.append(question)
 
-                if qry_question is not None:
+                if len(qry_question) != 0:
                     quizs[0]["question"] = questions
                 else:
                     quizs[0]["question"] = []
@@ -310,8 +310,7 @@ class HistoriesModuleMentee(Resource):
         qry_history_module = HistoriesModule.query.filter_by(mentee_id=claims["id"]).first()
 
         if qry_history_module is None:
-            phase = Phases.query[0]
-            modules = Modules.query.filter_by(phase_id=phase.id).all()
+            modules = Modules.query.filter_by(status=True).all()
 
             history_modules = []
             for index, module in enumerate(modules):
@@ -339,29 +338,6 @@ class HistoriesModuleMentee(Resource):
 
                 result = marshal(result, HistoriesModule.response_fields)
                 history_modules.append(result)
-
-            modules = Modules.query
-            for index, module in enumerate(modules):
-                if module.phase_id != phase.id:
-                    score = None
-                    is_complete = False
-                    lock_key = False
-                    status = True
-                    
-                    result = HistoriesModule(
-                        module.id,
-                        claims["id"],
-                        score,
-                        is_complete,
-                        lock_key,
-                        status
-                    )
-
-                    db.session.add(result)
-                    db.session.commit()
-
-                    result = marshal(result, HistoriesModule.response_fields)
-                    history_modules.append(result)
 
             return history_modules, 200
         
@@ -449,7 +425,7 @@ class HistoriesModuleByIdPhase(Resource):
                             
                             questions.append(question)
 
-                    if qry_question is not None:
+                    if len(qry_question) != 0:
                         quizs[0]["question"] = questions
                     else:
                         quizs[0]["question"] = []

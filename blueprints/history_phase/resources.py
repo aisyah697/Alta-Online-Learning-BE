@@ -5,6 +5,7 @@ from flask import Blueprint
 from flask_restful import Resource, Api, reqparse, marshal, inputs
 from blueprints import db, app
 from sqlalchemy import desc
+from datetime import datetime
 import hashlib, uuid 
 from flask_jwt_extended import (
     JWTManager,
@@ -46,8 +47,8 @@ class HistoriesPhaseResource(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument("phase_id", location="json", required=True)
         parser.add_argument("mentee_id", location="json", required=True)
-        parser.add_argument("score", location="json")
-        parser.add_argument("certificate", location="json")
+        parser.add_argument("score", location="json", default=None)
+        parser.add_argument("certificate", location="json", default=None)
         parser.add_argument("date_certificate", location="json", default=None)
         parser.add_argument("lock_key", location="json", type=bool, default=False)
         parser.add_argument("status", location="json", type=bool, default=True)
@@ -68,21 +69,11 @@ class HistoriesPhaseResource(Resource):
         if qry_phase is None:
             return {"status": "ID Phase is Not Found"}, 404
 
-        #Make number certificate
-        if args["score"] is not None:
-            if args["score"] >= 80 and args["score"] is not None:
-                encoded = uuid.uuid4().hex
-            else:
-                encoded = None
-        else:
-            score = None
-            encoded = None
-
         result = HistoriesPhase(
             args["phase_id"],
             args["mentee_id"],
-            score,
-            encoded,
+            args["score"],
+            args["certificate"],
             args["date_certificate"],
             args["lock_key"],
             args["status"]
@@ -123,7 +114,6 @@ class HistoriesPhaseResource(Resource):
         parser.add_argument("phase_id", location="json")
         parser.add_argument("mentee_id", location="json")
         parser.add_argument("score", location="json")
-        parser.add_argument("certificate", location="json")
         parser.add_argument("date_certificate", location="json", default=None)
         parser.add_argument("lock_key", location="json", type=bool)
         args = parser.parse_args()
@@ -136,21 +126,21 @@ class HistoriesPhaseResource(Resource):
         
         if args['score'] is not None:
             qry_history_phase.score = args['score']
-
             #Make number certificate
+            mentee = Mentees.query.filter_by(id=qry_history_phase.mentee_id).first()
             if int(args["score"]) >= 80:
-                print("test ========", qry_history_phase.certificate)
                 if qry_history_phase.certificate is None:
-                    encoded = uuid.uuid4().hex
-                    qry_history_phase.certificate = encoded
+                    date_number = datetime.now().strftime('%d-%m-%y')
+                    name_mentee = mentee.full_name.replace(" ", "-")
+                    certificate = "alta/0" + id + "/" + str(date_number) + "/" + name_mentee    
+                    qry_history_phase.certificate = certificate
+                    qry_history_phase.date_certificate = datetime.now()
             else:
                 qry_history_phase.certificate = None
+                qry_history_phase.date_certificate = None
 
         if args['lock_key'] is not None:
             qry_history_phase.lock_key = args['lock_key']
-
-        if args["date_certificate"] is not None:
-            qry_history_phase.date_certificate = args["date_certificate"]
 
         db.session.commit()
 
@@ -166,7 +156,7 @@ class HistoriesPhaseResource(Resource):
 
             return {"status": "DELETED SUCCESS"}, 200
         
-        return {"status": "ID NOT FOUND"}, 200
+        return {"status": "ID NOT FOUND"}, 404
 
 
 class HistoriesPhaseAll(Resource):
@@ -254,6 +244,7 @@ class HistoriesPhaseMentee(Resource):
             for index, phase in enumerate(phases):
                 score = None
                 certificate = None
+                date_certificate = None
                 
                 if index == 0:
                     lock_key = True
@@ -267,6 +258,7 @@ class HistoriesPhaseMentee(Resource):
                     claims["id"],
                     score,
                     certificate,
+                    date_certificate,
                     lock_key,
                     status
                 )

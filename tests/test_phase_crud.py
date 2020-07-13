@@ -23,7 +23,7 @@ class TestPhaseCrud():
     def test_phase_post_admin_super(self, client, init_database):
         token = create_token_admin()
         data = {
-            'name': 'Phase 2',
+            'name': 'Phase 3',
             'description': "Lorem Ipsum Dolor",
             'status': True
         }
@@ -34,7 +34,7 @@ class TestPhaseCrud():
     def test_phase_post_admin_not_super(self, client, init_database):
         token = create_token_admin_business()
         data = {
-            'name': 'Phase 2',
+            'name': 'Phase 3',
             'description': "Lorem Ipsum Dolor",
             'status': True
         }

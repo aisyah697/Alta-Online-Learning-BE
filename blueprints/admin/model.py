@@ -71,4 +71,4 @@ class Admins(db.Model):
         self.status = status
 
     def __rpr__(self):
-        return "<Users %r>" % self.id
+        return "<Admins %r>" % self.id
