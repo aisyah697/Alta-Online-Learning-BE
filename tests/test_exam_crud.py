@@ -23,7 +23,7 @@ class TestExamCrud():
     def test_exam_post(self, client, init_database):
         token = create_token_admin()
         data={
-            "subject_id": 4,
+            "subject_id": 5,
             "type_exam": "quiz",
             "status": True
         }
