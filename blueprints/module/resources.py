@@ -268,9 +268,9 @@ class ModulesResource(Resource):
         
         if claims["role"] == "super":
             module = Modules.query.get(id)
-            filename = module.image
             
             if module is not None:
+                filename = module.image
                 if filename is not None:
                     #remove image in storage
                     filename = "image/"+filename.split("/")[-1]

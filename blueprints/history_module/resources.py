@@ -310,34 +310,37 @@ class HistoriesModuleMentee(Resource):
         qry_history_module = HistoriesModule.query.filter_by(mentee_id=claims["id"]).first()
 
         if qry_history_module is None:
-            modules = Modules.query.filter_by(status=True).all()
-
+            phases = Phases.query.filter_by(status=True).all()
             history_modules = []
-            for index, module in enumerate(modules):
-                score = None
-                is_complete = False
-                
-                if index == 0:
-                    lock_key = True
-                else:
-                    lock_key = False
-                
-                status = True
-                
-                result = HistoriesModule(
-                    module.id,
-                    claims["id"],
-                    score,
-                    is_complete,
-                    lock_key,
-                    status
-                )
 
-                db.session.add(result)
-                db.session.commit()
+            for index_phase, phase in enumerate(phases):
+                modules = Modules.query.filter_by(status=True).filter_by(phase_id=phase.id).all()
 
-                result = marshal(result, HistoriesModule.response_fields)
-                history_modules.append(result)
+                for index_module, module in enumerate(modules):
+                    score = None
+                    is_complete = False
+                    
+                    if index_module == 0 and index_phase == 0:
+                        lock_key = True
+                    else:
+                        lock_key = False
+                    
+                    status = True
+                    
+                    result = HistoriesModule(
+                        module.id,
+                        claims["id"],
+                        score,
+                        is_complete,
+                        lock_key,
+                        status
+                    )
+
+                    db.session.add(result)
+                    db.session.commit()
+
+                    result = marshal(result, HistoriesModule.response_fields)
+                    history_modules.append(result)
 
             return history_modules, 200
         

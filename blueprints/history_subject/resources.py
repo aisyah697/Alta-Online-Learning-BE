@@ -283,7 +283,7 @@ class HistoriesSubjectMentee(Resource):
                     
                     questions.append(question)
 
-            if qry_question is not None:
+            if len(qry_question) != 0:
                 quizs[0]["question"] = questions
             else:
                 quizs[0]["question"] = []
@@ -312,36 +312,42 @@ class HistoriesSubjectMentee(Resource):
         qry_history_subject = HistoriesSubject.query.filter_by(mentee_id=claims["id"]).first()
 
         if qry_history_subject is None:
-            subjects = Subjects.query.filter_by(status=True).all()
-
+            phases = Phases.query.filter_by(status=True).all()
             history_subjects = []
-            for index, subject in enumerate(subjects):
-                score = None
-                time_of_exam = None
-                is_complete = False
-                
-                if index == 0:
-                    lock_key = True
-                else:
-                    lock_key = False
-                
-                status = True
-                
-                result = HistoriesSubject(
-                    subject.id,
-                    claims["id"],
-                    score,
-                    time_of_exam,
-                    is_complete,
-                    lock_key,
-                    status
-                )
 
-                db.session.add(result)
-                db.session.commit()
+            for index_phase, phase in enumerate(phases):
+                modules = Modules.query.filter_by(status=True).filter_by(phase_id=phase.id).all()
 
-                result = marshal(result, HistoriesSubject.response_fields)
-                history_subjects.append(result)
+                for index_module, module in enumerate(modules):
+                    subjects = Subjects.query.filter_by(status=True).filter_by(module_id=module.id).all()
+
+                    for index_subject, subject in enumerate(subjects):
+                        score = None
+                        time_of_exam = None
+                        is_complete = False
+                        
+                        if index_phase == 0 and index_module == 0 and index_subject == 0:
+                            lock_key = True
+                        else:
+                            lock_key = False
+                        
+                        status = True
+                        
+                        result = HistoriesSubject(
+                            subject.id,
+                            claims["id"],
+                            score,
+                            time_of_exam,
+                            is_complete,
+                            lock_key,
+                            status
+                        )
+
+                        db.session.add(result)
+                        db.session.commit()
+
+                        result = marshal(result, HistoriesSubject.response_fields)
+                        history_subjects.append(result)
             
             return history_subjects, 200
         
