@@ -327,19 +327,19 @@ class CorrectionsExamSubmit(Resource):
                     
                     # for index_subject, history_subject in enumerate(qry_history_subject):
                     for index_subject, history_subject in enumerate(histories_subject):
-                        #make lock_key true when is_complete of subject_id in the before is True
+                        # make lock_key true when is_complete of subject_id in the before is True
                         if history_subject.is_complete == True and index_subject != (len(qry_history_subject)-1):
                             qry_history_subject[index_subject+1].lock_key = True
                             respond_subject = {"status" : "subject", "score": qry_history_exam.score}
 
-                    #change lock_key in modul
+                    # change lock_key in modul
                     if len(histories_subject) != 0:
                         modul_last_subject = histories_subject[-1]
                         if modul_last_subject.is_complete == True:
                             qry_history_module[index_module].is_complete = True
-                            #input score in modul
+                            # input score in modul
                             sum_subject = len(histories_subject)
-                            #calculate score
+                            # calculate score
                             score_temporary = 0
                             for subject in histories_subject:
                                 score_temporary += subject.score
@@ -354,7 +354,7 @@ class CorrectionsExamSubmit(Resource):
                             
                             respond_modul = {"status" : "module", "score": score}
 
-                #change lock key in phase
+                # change lock key in phase
                 if len(histories_module) != 0:
                     phase_last_modul = histories_module[-1]
                     if phase_last_modul.is_complete == True:
@@ -362,9 +362,9 @@ class CorrectionsExamSubmit(Resource):
                         name_mentee = str(claims["full_name"]).replace(" ", "-")
                         qry_history_phase[index_phase].certificate = "alta/0" + str(index_phase+1) + "/" + str(date_number) + "/" + name_mentee
                         qry_history_phase[index_phase].date_certificate = datetime.now()
-                        #input score in phase
+                        # input score in phase
                         sum_module = len(histories_module)
-                        #calculate score
+                        # calculate score
                         score_temporary = 0
                         for module in histories_module:
                             score_temporary += module.score
