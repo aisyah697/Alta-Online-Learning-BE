@@ -28,11 +28,11 @@ api = Api(bp_history_phase)
 
 
 class HistoriesPhaseResource(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for search history phase by id
+    # Endpoint for search history phase by id
     def get(self, id=None):
         qry_history_phase = HistoriesPhase.query.filter_by(status=True).filter_by(id=id).first()
 
@@ -41,7 +41,7 @@ class HistoriesPhaseResource(Resource):
         
         return {"status": "Id history phase not found"}, 404
 
-    #endpoint for post history phase
+    # Endpoint for post history phase
     @mentee_required
     def post(self):
         parser = reqparse.RequestParser()
@@ -54,17 +54,17 @@ class HistoriesPhaseResource(Resource):
         parser.add_argument("status", location="json", type=bool, default=True)
         args = parser.parse_args()
 
-        #Check phase and mentee is existance in database
+        # Check phase and mentee is existance in database
         qry_history_phase = HistoriesPhase.query.filter_by(phase_id=args["phase_id"]).filter_by(mentee_id=args["mentee_id"]).filter_by(status=True).all()
         if len(qry_history_phase) > 0:
             return {"status": "Phase and Mentee is already there"}, 404
 
-        #Check Id Mentee is in database or not
+        # Check Id Mentee is in database or not
         qry_mentee = Mentees.query.get(args["mentee_id"])
         if qry_mentee is None:
             return {"status": "ID Mentee is Not Found"}, 404
 
-        #Check Id Phase is in database or not
+        # Check Id Phase is in database or not
         qry_phase = Phases.query.get(args["phase_id"])
         if qry_phase is None:
             return {"status": "ID Phase is Not Found"}, 404
@@ -84,19 +84,19 @@ class HistoriesPhaseResource(Resource):
 
         return marshal(result, HistoriesPhase.response_fields), 200
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in query or not
+        # Check id in query or not
         qry_history_phase = HistoriesPhase.query.get(id)
         if qry_history_phase is None:
             return {'status': 'History Phase is NOT_FOUND'}, 404
 
-        #input update status 
+        # Input update status 
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete
+        # Change status for soft delete
         if args['status'] is not None:
             qry_history_phase.status = args['status']
 
@@ -104,7 +104,7 @@ class HistoriesPhaseResource(Resource):
 
         return marshal(qry_history_phase, HistoriesPhase.response_fields), 200
 
-    #endpoint for update field
+    # Endpoint for update field
     def patch(self, id):
         qry_history_phase = HistoriesPhase.query.filter_by(status=True).filter_by(id=id).first()
         if qry_history_phase is None:
@@ -126,7 +126,7 @@ class HistoriesPhaseResource(Resource):
         
         if args['score'] is not None:
             qry_history_phase.score = args['score']
-            #Make number certificate
+            # Make number certificate
             mentee = Mentees.query.filter_by(id=qry_history_phase.mentee_id).first()
             if int(args["score"]) >= 80:
                 if qry_history_phase.certificate is None:
@@ -146,7 +146,7 @@ class HistoriesPhaseResource(Resource):
 
         return marshal(qry_history_phase, HistoriesPhase.response_fields), 200
 
-    #endpoint for delete history phase by id
+    # Endpoint for delete history phase by id
     def delete(self, id):
         qry_history_phase = HistoriesPhase.query.get(id)
         
@@ -160,11 +160,11 @@ class HistoriesPhaseResource(Resource):
 
 
 class HistoriesPhaseAll(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by score and created at
+    # Endpoint to get all and sort by score and created at
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)
@@ -199,39 +199,39 @@ class HistoriesPhaseAll(Resource):
 
 
 class HistoriesPhaseMentee(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to show all phase per masing-masing mentee
+    #Endpoint to show all phase per masing-masing mentee
     @mentee_required
     def get(self):
-        #get id mentee
+        # Get id mentee
         verify_jwt_in_request()
         claims = get_jwt_claims()
         mentee_id = claims["id"]
 
-        #get history phase mentee
+        # Get history phase mentee
         qry_history_phase = HistoriesPhase.query.filter_by(status=True).filter_by(mentee_id=mentee_id).all()
 
         histories_phase = []
         for history_phase in qry_history_phase:
             history_phase = marshal(history_phase, HistoriesPhase.response_fields)
             
-            #get phase in database
+            # Get phase in database
             qry_phase = Phases.query.filter_by(status=True).filter_by(id=history_phase["phase_id"]).first()
             phase = marshal(qry_phase, Phases.response_fields)
             
-            #input phase in object history phase
+            # Input phase in object history phase
             history_phase["phase"] = phase
             histories_phase.append(history_phase)
 
         return histories_phase, 200
 
-    #endpoint when register to post phase per masing-masing mentee
+    # Endpoint when register to post phase per masing-masing mentee
     @mentee_required
     def post(self):
-        #get id mentee
+        # Get id mentee
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -276,11 +276,11 @@ class HistoriesPhaseMentee(Resource):
 
 
 class HistoriesPhaseAllStatus(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all status of history phase
+    # Endpoint to get all status of history phase
     def get(self):
         qry_history_phase = HistoriesPhase.query
 

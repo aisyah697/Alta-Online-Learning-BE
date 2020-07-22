@@ -21,14 +21,14 @@ api = Api(bp_quiz)
 
 
 class QuizsResource(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for get quiz by ID
+    # Endpoint for get quiz by ID
     @admin_required
     def get(self, id=None):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -45,10 +45,10 @@ class QuizsResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint post quiz
+    # Endpoint post quiz
     @admin_required
     def post(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -60,13 +60,13 @@ class QuizsResource(Resource):
             parser.add_argument("status", location="json", type=bool, default=True)
             args = parser.parse_args()
 
-            #check exam_id
+            # Check exam_id
             exam_id = Exams.query.get(args["exam_id"])
 
             if exam_id is None:
                 return {"status": "Exam isn't in database"}, 404
 
-            #Check there no same exam_id
+            # Check there no same exam_id
             exam_id_quiz = Quizs.query.filter_by(exam_id=args["exam_id"]).first()
             
             if exam_id_quiz is not None:
@@ -87,30 +87,30 @@ class QuizsResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in query or not
+        # Check id in query or not
         qry_quiz = Quizs.query.get(id)
         
         if qry_quiz is None:
             return {'status': 'Quiz is NOT_FOUND'}, 404
         
-        #input update status for soft delete
+        # Input update status for soft delete
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete      
+        # Change status for soft delete      
         qry_quiz.status = args['status']
 
         db.session.commit()
 
         return marshal(qry_quiz, Quizs.response_fields), 200
 
-    #endpoint for update quiz
+    # Endpoint for update quiz
     @admin_required
     def patch(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -141,10 +141,10 @@ class QuizsResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #Endpoint delete quiz by Id
+    # Endpoint delete quiz by Id
     @admin_required
     def delete(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -164,14 +164,14 @@ class QuizsResource(Resource):
 
 
 class QuizsAll(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
     
-    #endpoint to get all and sort by exam_id
+    # Endpoint to get all and sort by exam_id
     @admin_required
     def get(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -207,11 +207,11 @@ class QuizsAll(Resource):
 
 
 class QuizsAllStatus(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all status of livecode
+    # Endpoint to get all status of livecode
     def get(self):
         qry_quiz = Quizs.query
 

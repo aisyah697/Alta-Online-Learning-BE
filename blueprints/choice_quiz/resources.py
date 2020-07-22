@@ -22,14 +22,14 @@ api = Api(bp_choice_quiz)
 
 
 class ChoicesQuizResource(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for get choices by ID
+    # Endpoint for get choices by ID
     @admin_required
     def get(self, id=None):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -46,10 +46,10 @@ class ChoicesQuizResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint post choice quiz
+    # Endpoint post choice quiz
     @admin_required
     def post(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -80,30 +80,30 @@ class ChoicesQuizResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in query or not
+        # Check id in query or not
         qry_choice_quiz = ChoicesQuiz.query.get(id)
         
         if qry_choice_quiz is None:
             return {'status': 'Choice Quiz is NOT_FOUND'}, 404
         
-        #input update status for soft delete
+        # Input update status for soft delete
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete      
+        # Change status for soft delete      
         qry_choice_quiz.status = args['status']
 
         db.session.commit()
 
         return marshal(qry_choice_quiz, ChoicesQuiz.response_fields), 200
 
-    #endpoint for update choice
+    # Endpoint for update choice
     @admin_required
     def patch(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -130,10 +130,10 @@ class ChoicesQuizResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #Endpoint delete Choice Quiz by Id
+    # Endpoint delete Choice Quiz by Id
     @admin_required
     def delete(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -153,14 +153,14 @@ class ChoicesQuizResource(Resource):
 
 
 class ChoicesQuizAll(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by choice and created_at
+    # Endpoint to get all and sort by choice and created_at
     @admin_required
     def get(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -201,11 +201,11 @@ class ChoicesQuizAll(Resource):
 
 
 class ChoicesQuizAllStatus(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
     
-    #endpoint to get all status of choice 
+    # Endpoint to get all status of choice 
     def get(self):
         qry_choice_quiz = ChoicesQuiz.query
 

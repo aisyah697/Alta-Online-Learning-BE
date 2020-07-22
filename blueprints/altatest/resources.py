@@ -25,11 +25,11 @@ api = Api(bp_altatest)
 
 
 class AltatestsResource(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for search altatest by id
+    # Endpoint for search altatest by id
     def get(self, id=None):
         qry_altatest = Altatests.query.filter_by(status=True).filter_by(id=id).first()
 
@@ -54,7 +54,7 @@ class AltatestsResource(Resource):
         
         return {"status": "Id Altatests not found"}, 404
 
-    #endpoint post altatest
+    # Endpoint post altatest
     @mentee_required
     def post(self):
         parser = reqparse.RequestParser()
@@ -98,27 +98,27 @@ class AltatestsResource(Resource):
 
         return result, 200
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in query or not
+        # Check id in query or not
         qry_altatest = Altatests.query.get(id)
         
         if qry_altatest is None:
             return {'status': 'Altatest is NOT_FOUND'}, 404
         
-        #input update status for soft delete 
+        # Input update status for soft delete 
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete      
+        # Change status for soft delete      
         qry_altatest.status = args['status']
 
         db.session.commit()
 
         return marshal(qry_altatest, Altatests.response_fields), 200
 
-    #Endpoint delete Altatest by Id
+    # Endpoint delete Altatest by Id
     @mentee_required
     def delete(self, id):
         qry_altatest = Altatests.query.get(id)
@@ -133,11 +133,11 @@ class AltatestsResource(Resource):
 
 
 class AltatestAll(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by choice and created_at
+    # Endpoint to get all and sort by choice and created_at
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)
@@ -172,11 +172,11 @@ class AltatestAll(Resource):
 
 
 class AltatestAllStatus(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
     
-    #endpoint to get all status of altatest 
+    # Endpoint to get all status of altatest 
     def get(self):
         qry_altatest = Altatests.query
 

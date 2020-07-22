@@ -30,14 +30,14 @@ api = Api(bp_history_exam)
 
 
 class HistoriesExamResource(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for search history exam by id
+    # Endpoint for search history exam by id
     @mentee_required
     def get(self):
-        #get id mentee from token
+        # Get id mentee from token
         verify_jwt_in_request()
         claims = get_jwt_claims()
 
@@ -50,22 +50,22 @@ class HistoriesExamResource(Resource):
         if qry_history_exam != []:
             histories_exam =[]
             for history_exam in qry_history_exam:
-                #exam
+                # Exam
                 qry_exam = Exams.query.filter_by(id=history_exam.exam_id).first()
                 exam = marshal(qry_exam, Exams.response_fields)
                 
                 if qry_exam.type_exam == "quiz":
-                    #quiz
+                    # Quiz
                     qry_quiz = Quizs.query.filter_by(exam_id=qry_exam.id).first()
                     quiz = marshal(qry_quiz, Quizs.response_fields)
                     
-                    #question
+                    # Question
                     qry_question = QuestionsQuiz.query.filter_by(quiz_id=qry_quiz.id).all()
                     questions = []
                     for question in qry_question:
                         question = marshal(question, QuestionsQuiz.response_fields)
 
-                        #choice
+                        # Choice
                         qry_choice = ChoicesQuiz.query.filter_by(question_id=question["id"]).all()
                         choices = []
                         for choice in qry_choice:
@@ -96,10 +96,10 @@ class HistoriesExamResource(Resource):
         
         return {"status": "not_found"}, 200
 
-    #endpoint for post history exam
+    # Endpoint for post history exam
     @mentee_required
     def post(self):
-        #get id mentee from token
+        # Get id mentee from token
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -110,12 +110,12 @@ class HistoriesExamResource(Resource):
         parser.add_argument("status", location="json", type=bool, default=True)
         args = parser.parse_args()
 
-        #Check Id Exam is in database or not
+        # Check Id Exam is in database or not
         qry_exam = Exams.query.get(args["exam_id"])
         if qry_exam is None:
             return {"status": "ID Exam is Not Found"}, 404
         
-        #Check Id Mentee is in database or not
+        # Check Id Mentee is in database or not
         qry_mentee = Mentees.query.get(claims["id"])
         if qry_mentee is None:
             return {"status": "ID Mentee is Not Found"}, 404
@@ -133,19 +133,19 @@ class HistoriesExamResource(Resource):
 
         return marshal(result, HistoriesExam.response_fields), 200
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in querry or not
+        # Check id in querry or not
         qry_history_exam = HistoriesExam.query.get(id)
         if qry_history_exam is None:
             return {'status': 'History Exam is NOT_FOUND'}, 404
 
-        #input update status
+        # Input update status
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete
+        # Change status for soft delete
         if args['status'] is not None:
             qry_history_exam.status = args['status']
 
@@ -153,7 +153,7 @@ class HistoriesExamResource(Resource):
 
         return marshal(qry_history_exam, HistoriesExam.response_fields), 200
 
-    #endpoint for update field
+    # Endpoint for update field
     def patch(self, id):
         qry_history_exam = HistoriesExam.query.filter_by(status=True).filter_by(id=id).first()
         if qry_history_exam is None:
@@ -182,7 +182,7 @@ class HistoriesExamResource(Resource):
 
         return marshal(qry_history_exam, HistoriesExam.response_fields), 200
 
-    #endpoint for delete history subject by id
+    # Endpoint for delete history subject by id
     def delete(self, id):
         qry_history_exam = HistoriesExam.query.get(id)
         
@@ -196,11 +196,11 @@ class HistoriesExamResource(Resource):
 
 
 class HistoriesExamAll(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by score and created at
+    # Endpoint to get all and sort by score and created at
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)
@@ -235,11 +235,11 @@ class HistoriesExamAll(Resource):
 
 
 class HistoriesExamAllStatus(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
         
-    #endpoint to get all status of history exam
+    # Endpoint to get all status of history exam
     def get(self):
         qry_history_exam = HistoriesExam.query
 

@@ -24,11 +24,11 @@ api = Api(bp_question_altatest)
 
 
 class QuestionsAltatestResource(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for get questions by ID
+    # Endpoint for get questions by ID
     def get(self, id=None):
         qry_question_altatest = QuestionsAltatest.query.filter_by(status=True).filter_by(id=id).first()
 
@@ -49,10 +49,10 @@ class QuestionsAltatestResource(Resource):
         return {"status": "Id Question Altatest is not found"}, 404
 
 
-    #endpoint post question altatest
+    # Endpoint post question altatest
     @admin_required
     def post(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -80,30 +80,30 @@ class QuestionsAltatestResource(Resource):
         else:
             return {"status": "admin isn't at role super, council, and academic admin"}, 404
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in query or not
+        # Check id in query or not
         qry_question_altatest = QuestionsAltatest.query.get(id)
         
         if qry_question_altatest is None:
             return {'status': 'Question Altatest is NOT_FOUND'}, 404
         
-        #input update status 
+        # Input update status 
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete      
+        # Change status for soft delete      
         qry_question_altatest.status = args['status']
 
         db.session.commit()
 
         return marshal(qry_question_altatest, QuestionsAltatest.response_fields), 200
 
-    #endpoint for update question
+    # Endpoint for update question
     @admin_required
     def patch(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -126,10 +126,10 @@ class QuestionsAltatestResource(Resource):
         else:
             return {"status": "admin isn't at role super, council, and academic admin"}, 404
 
-    #endpoint to delete question by id
+    # Endpoint to delete question by id
     @admin_required
     def delete(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -149,11 +149,11 @@ class QuestionsAltatestResource(Resource):
 
 
 class QuestionsAltatestAll(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by question and created_at
+    # Endpoint to get all and sort by question and created_at
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)
@@ -188,11 +188,11 @@ class QuestionsAltatestAll(Resource):
 
 
 class QuestionsAltatestAllStatus(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
         
-    #endpoint to get all status of question
+    # Endpoint to get all status of question
     def get(self):
         qry_question_altatest = QuestionsAltatest.query
 

@@ -25,14 +25,14 @@ api = Api(bp_file_subject)
 
 
 class FilesSubjectResource(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for search file subject by id
+    # Endpoint for search file subject by id
     @admin_required
     def get(self, id=None):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -47,10 +47,10 @@ class FilesSubjectResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint for post file subject
+    # Endpoint for post file subject
     @admin_required
     def post(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -63,13 +63,13 @@ class FilesSubjectResource(Resource):
             parser.add_argument("status", location="form", default="True")
             args = parser.parse_args()
 
-            #for status, status used to soft delete 
+            # For status, status used to soft delete 
             if args["status"] == "True" or args["status"] == "true":
                 args["status"] = True
             elif args["status"] == "False" or args["status"] == "false":
                 args["status"] = False
 
-            #for upload image in storage
+            # For upload image in storage
             content_file = args["content_file"]
 
             if content_file:
@@ -88,13 +88,13 @@ class FilesSubjectResource(Resource):
                 if args["category_file"] == "presentation":
                     s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="presentation/"+filename_key, Body=filename_body, ACL='public-read')
 
-                    filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/presentation/" + str(filename_key)
+                    filename = "https://alta-online-learning.s3-ap-southeast-1.amazonaws.com/presentation/" + str(filename_key)
                     filename = filename.replace(" ", "+")
 
                 elif args["category_file"] == "video":
                     s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="video/"+filename_key, Body=filename_body, ACL='public-read')
 
-                    filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/video/" + str(filename_key)
+                    filename = "https://alta-online-learning.s3-ap-southeast-1.amazonaws.com/video/" + str(filename_key)
                     filename = filename.replace(" ", "+")
             
             else:
@@ -116,41 +116,41 @@ class FilesSubjectResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in query or not
+        # Check id in query or not
         qry_file_subject = FilesSubject.query.get(id)
         
         if qry_file_subject is None:
             return {'status': 'File Mentee is NOT_FOUND'}, 404
         
-        #input update status for soft delete
+        # Input update status for soft delete
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="form")
         args = parser.parse_args()
 
-        #for status, status used to soft delete 
+        # For status, status used to soft delete 
         if args["status"] == "True" or args["status"] == "true":
             args["status"] = True
         elif args["status"] == "False" or args["status"] == "false":
             args["status"] = False
         
-        #change status for soft delete      
+        # Change status for soft delete      
         qry_file_subject.status = args['status']
 
         db.session.commit()
 
         return marshal(qry_file_subject, FilesSubject.response_fields), 200
 
-    #endpoint for update field
+    # Endpoint for update field
     @admin_required
     def patch(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
         if claims["role"] == "super" or claims["role"] == "academic":
-            #check id in querry or not
+            # Check id in querry or not
             qry_file_subject = FilesSubject.query.filter_by(status=True).filter_by(id=id).first()
             if qry_file_subject is None:
                 return {'status': 'File Mentee is NOT_FOUND'}, 404
@@ -169,11 +169,11 @@ class FilesSubjectResource(Resource):
                 qry_file_subject.name = args["name"]
 
             if args['content_file'] is not None:
-                #Check content file subject in query
+                # Check content file subject in query
                 if qry_file_subject.content_file is not None:
                     filename = qry_file_subject.content_file
 
-                    #remove avatar in storage
+                    # Remove avatar in storage
                     if qry_file_subject.category_file == "presentation":
                         filename = "presentation/"+filename.split("/")[-1]
                         filename = filename.replace("+", " ")
@@ -190,7 +190,7 @@ class FilesSubjectResource(Resource):
 
                     s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
 
-                    #Change content file subject in storage
+                    # Change content file subject in storage
                     content_file = args["content_file"]
                     
                     randomstr = uuid.uuid4().hex
@@ -208,13 +208,13 @@ class FilesSubjectResource(Resource):
                     if args["category_file"] == "presentation":
                         s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="presentation/"+filename_key, Body=filename_body, ACL='public-read')
 
-                        filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/presentation/" + str(filename_key)
+                        filename = "https://alta-online-learning.s3-ap-southeast-1.amazonaws.com/presentation/" + str(filename_key)
                         filename = filename.replace(" ", "+")
 
                     elif args["category_file"] == "video":
                         s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="video/"+filename_key, Body=filename_body, ACL='public-read')
 
-                        filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/video/" + str(filename_key)
+                        filename = "https://alta-online-learning.s3-ap-southeast-1.amazonaws.com/video/" + str(filename_key)
                         filename = filename.replace(" ", "+")
         
                     qry_file_subject.content_file = filename
@@ -237,13 +237,13 @@ class FilesSubjectResource(Resource):
                     if args["category_file"] == "presentation":
                         s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="presentation/"+filename_key, Body=filename_body, ACL='public-read')
 
-                        filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/presentation/" + str(filename_key)
+                        filename = "https://alta-online-learning.s3-ap-southeast-1.amazonaws.com/presentation/" + str(filename_key)
                         filename = filename.replace(" ", "+")
 
                     elif args["category_file"] == "video":
                         s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="video/"+filename_key, Body=filename_body, ACL='public-read')
 
-                        filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/video/" + str(filename_key)
+                        filename = "https://alta-online-learning.s3-ap-southeast-1.amazonaws.com/video/" + str(filename_key)
                         filename = filename.replace(" ", "+")
         
                     qry_file_subject.content_file = filename
@@ -258,7 +258,7 @@ class FilesSubjectResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #Endpoint delete file subject by Id
+    # Endpoint delete file subject by Id
     @admin_required
     def delete(self, id):
         #check role admin
@@ -267,11 +267,11 @@ class FilesSubjectResource(Resource):
         
         if claims["role"] == "super" or claims["role"] == "academic":
             qry_file_subject = FilesSubject.query.get(id)
-            #Check content file subject in query
+            # Check content file subject in query
             if qry_file_subject is not None:
                 filename = qry_file_subject.content_file
 
-                #remove avatar in storage
+                # Remove avatar in storage
                 if qry_file_subject.category_file == "presentation":
                     filename = "presentation/"+filename.split("/")[-1]
                     filename = filename.replace("+", " ")
@@ -300,14 +300,14 @@ class FilesSubjectResource(Resource):
 
 
 class FilesSubjectAll(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by subject_id and category_file
+    # Endpoint to get all and sort by subject_id and category_file
     @admin_required
     def get(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -348,11 +348,11 @@ class FilesSubjectAll(Resource):
 
 
 class FilesSubjectAllStatus(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
         
-    #endpoint to get all status of choice 
+    # Endpoint to get all status of choice 
     def get(self):
         qry_file_subject = FilesSubject.query
 

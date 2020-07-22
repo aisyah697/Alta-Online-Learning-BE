@@ -26,13 +26,21 @@ api = Api(bp_admin)
 
 
 class AdminsResource(Resource):
-    #for solve cors
+    # Endpoint for solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for search admin by id
+    # Endpoint for search admin by id
     @admin_required
     def get(self, id=None):
+        """Gets and prints the admin by Id
+
+        Args:
+            id (int): Id Admin in database
+
+        Returns:
+            object: a object of admin by Id
+        """
         qry_admin = Admins.query.filter_by(status=True).filter_by(id=id).first()
 
         if qry_admin is not None:
@@ -40,10 +48,30 @@ class AdminsResource(Resource):
         
         return {"status": "Id Admins not found"}, 404
 
-    #endpoint for post admin
+    # Endpoint for post admin
     @admin_required
     def post(self):
-        #check role admin
+        """Post Admin in database by super admin
+
+            Args:
+                username (str): username admin that use to login
+                password (str): password admin that use to login
+                full_name (str): full_name of admin
+                role (str): full_name of admin that consist by super, academic, council, and business
+                email (str): email of admin that allow a regex of email type
+                address (str): address of admin
+                phone (str): number phone of admin that a allow a regex 8-15 number
+                place_birth (str): place birth of admin
+                date_birth (str): date birth of admin
+                avatar (str): file of avatar or image for photo profile of admin
+                github (str): link github of admin
+                description (str): description of profile admin
+                status (bool): status admin for soft delete
+
+            Returns:
+                object: a object of admin that post or register from args
+        """
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -64,38 +92,38 @@ class AdminsResource(Resource):
             parser.add_argument("status", location="form", default="True")
             args = parser.parse_args()
 
-            #check existance username
+            # Check existance username
             admin = Admins.query.filter_by(status=True).filter_by(username=args["username"]).first()
             if admin is not None:
                 return {"status": "username existance"}, 404
 
-            #check username
+            # Check username
             if len(args["username"]) < 6:
                 return {"status": "username must be at least 6 character"}, 404
 
-            #check phone number
+            # Check phone number
             if args["phone"] is not None:
                 phone = re.findall("^0[0-9]{7,14}", args["phone"])
                 if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
                     return {"status": "phone number not match"}, 404
 
-            #check password
+            # Check password
             if len(args["password"]) < 6:
                 return {"status": "password must be 6 character"}, 404
 
-            #check email
+            # Check email
             if args["email"] is not None:            
                 match=re.search("^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$", args["email"])
                 if match is None:
                     return {"status": "your input of email is wrong"}, 404
                   
-            #for status, status used to soft delete
+            # For status, status used to soft delete
             if args["status"] == "True" or args["status"] == "true":
                 args["status"] = True
             elif args["status"] == "False" or args["status"] == "false":
                 args["status"] = False
 
-            #for upload image in storage
+            # For upload image in storage
             avatar = args["avatar"]
 
             if avatar:
@@ -113,13 +141,13 @@ class AdminsResource(Resource):
                 # Image Uploaded
                 s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="avatar/"+filename_key, Body=filename_body, ACL='public-read')
 
-                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
+                filename = "https://alta-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
                 filename = filename.replace(" ", "+")
 
             else:
                 filename = None
 
-            #for filled salt on field's table of admin
+            # For filled salt on field's table of admin
             salt = uuid.uuid4().hex
             encoded = ("%s%s" % (args["password"], salt)).encode("utf-8")
             hash_pass = hashlib.sha512(encoded).hexdigest()
@@ -144,12 +172,12 @@ class AdminsResource(Resource):
             db.session.add(result)
             db.session.commit()
 
-            #for get token when register
+            # For get token when register
             jwt_username = marshal(result, Admins.jwt_claims_fields)
             jwt_username["status"] = "admin"
             token = create_access_token(identity=args["username"], user_claims=jwt_username)
 
-            #add key token in response of endpoint
+            # Add key token in response of endpoint
             result = marshal(result, Admins.response_fields)
             result["token"] = token
 
@@ -158,9 +186,18 @@ class AdminsResource(Resource):
         else:
             return {"status": "admin isn't at role super admin"}, 404
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in querry or not
+        """Put Admin in database for soft delete
+
+            Args:
+                id (int): Id Admin in database
+                status (bool): status admin for soft delete
+
+            Returns:
+                object: a object of admin that put from id admin args
+        """
+        # check id in querry or not
         qry_admin = Admins.query.get(id)
         if qry_admin is None:
             return {'status': 'Admin is NOT_FOUND'}, 404
@@ -170,7 +207,7 @@ class AdminsResource(Resource):
         parser.add_argument("status", location="form")
         args = parser.parse_args()
         
-        #change status for soft delete
+        # Change status for soft delete
         if args['status'] is not None:
             if args["status"] == "True" or args["status"] == "true":
                 args["status"] = True
@@ -185,9 +222,28 @@ class AdminsResource(Resource):
 
         return marshal(qry_admin, Admins.response_fields), 200
 
-    #endpoint for update field
+    # Endpoint for update field
     @admin_required
     def patch(self, id):
+        """Patch Admin and edit admin in database by id admin
+
+            Args:
+                username (str): username admin that use to login
+                password (str): password admin that use to login
+                full_name (str): full_name of admin
+                role (str): full_name of admin that consist by super, academic, council, and business
+                email (str): email of admin that allow a regex of email type
+                address (str): address of admin
+                phone (str): number phone of admin that a allow a regex 8-15 number
+                place_birth (str): place birth of admin
+                date_birth (str): date birth of admin
+                avatar (str): file of avatar or image for photo profile of admin
+                github (str): link github of admin
+                description (str): description of profile admin
+
+            Returns:
+                object: a object of admin that patch or edit from args id admin
+        """
         qry_admin = Admins.query.filter_by(status=True).filter_by(id=id).first()
         if qry_admin is None:
             return {'status': 'Admin is NOT_FOUND'}, 404
@@ -208,13 +264,13 @@ class AdminsResource(Resource):
         args = parser.parse_args()
 
         if args['username'] is not None:
-            #check username
+            # Check username
             if len(args["username"]) < 6:
                 return {"status": "username must be at least 6 character"}, 404
             qry_admin.username = args['username']
 
         if args['password'] is not None:
-            #cek password
+            # Check password
             if len(args["password"]) < 6:
                 return {"status": "password must be 6 character"}, 404
             encoded = ("%s%s" % (args["password"], qry_admin.salt)).encode("utf-8")
@@ -228,7 +284,7 @@ class AdminsResource(Resource):
             qry_admin.role = args['role']
 
         if args['email'] is not None:
-            #check email
+            # Check email
             match=re.search("^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$", args["email"])
             if match is None:
                 return {"status": "your input of email is wrong"}, 404
@@ -238,7 +294,7 @@ class AdminsResource(Resource):
             qry_admin.address = args['address']
 
         if args['phone'] is not None:
-            #cek phone number
+            # Check phone number
             phone = re.findall("^0[0-9]{7,14}", args["phone"])
             if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
                 return {"status": "phone number not match"}, 404
@@ -251,10 +307,10 @@ class AdminsResource(Resource):
             qry_admin.date_birth = args['date_birth']
 
         if args['avatar'] is not None:
-            #Check avatar in query
+            # Check avatar in query
             if qry_admin.avatar is not None:
                 filename = qry_admin.avatar
-                #remove avatar in storage
+                # Remove avatar in storage
                 filename = "avatar/"+filename.split("/")[-1]
                 filename = filename.replace("+", " ")
 
@@ -267,7 +323,7 @@ class AdminsResource(Resource):
 
                 s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
  
-                # #change avatar in storage
+                # Change avatar in storage
                 avatar = args["avatar"]
 
                 randomstr = uuid.uuid4().hex
@@ -284,7 +340,7 @@ class AdminsResource(Resource):
                 # Image Uploaded
                 s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="avatar/"+filename_key, Body=filename_body, ACL='public-read')
 
-                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
+                filename = "https://alta-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
                 filename = filename.replace(" ", "+")
 
                 qry_admin.avatar = filename
@@ -306,7 +362,7 @@ class AdminsResource(Resource):
                 # Image Uploaded
                 s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="avatar/"+filename_key, Body=filename_body, ACL='public-read')
 
-                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
+                filename = "https://alta-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
                 filename = filename.replace(" ", "+")
 
                 qry_admin.avatar = filename
@@ -321,10 +377,18 @@ class AdminsResource(Resource):
 
         return marshal(qry_admin, Admins.response_fields), 200
 
-    #endpoint for delete admin by id
+    # Endpoint for delete admin by id
     @admin_required
     def delete(self, id):
-        #check role admin
+        """Delete Admin in database by id in database
+
+            Args:
+                id (int): Id Admin in database
+
+            Returns:
+                text: "delete success"
+        """
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -334,7 +398,7 @@ class AdminsResource(Resource):
             
             if admin is not None:
                 if filename is not None:
-                    #remove avatar in storage
+                    # Remove avatar in storage
                     filename = "avatar/"+filename.split("/")[-1]
                     filename = filename.replace("+", " ")
 
@@ -347,7 +411,7 @@ class AdminsResource(Resource):
 
                     s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
                 
-                #remove database
+                # Remove database
                 db.session.delete(admin)
                 db.session.commit()
                 return {"status": "DELETED SUCCESS"}, 200
@@ -359,10 +423,21 @@ class AdminsResource(Resource):
 
 
 class AdminsAll(Resource):
-    #endpoint to get all and sort by username, full_name and role
+    # Endpoint to get all and sort by username, full_name and role
     @admin_required
     def get(self):
-        #check role admin
+        """Get All admin order by and sort
+
+            Args:
+                p (int): number of page that show data admin
+                rp (int): number of repeat page that show data admin
+                orderby (str): parameter orderby (super, council, academic, business)
+                sort (str): parameter sort(desc, asc)
+
+            Returns:
+                list: a list of all admin orderby and sort by args 
+        """
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -418,8 +493,13 @@ class AdminsAll(Resource):
 
 
 class AdminsAllStatus(Resource):
-    #endpoint to get all status of admin
+    # Endpoint to get all status of admin
     def get(self):
+        """Get All Admin in database
+
+            Returns:
+                list: a list of all admin
+        """
         qry_admin = Admins.query
 
         rows = []

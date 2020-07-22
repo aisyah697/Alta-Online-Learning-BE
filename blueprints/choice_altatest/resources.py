@@ -23,11 +23,11 @@ api = Api(bp_choice_altatest)
 
 
 class ChoicesAltatestResource(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for get choices by ID
+    # Endpoint for get choices by ID
     def get(self, id=None):
         qry_choice_altatest = ChoicesAltatest.query.filter_by(status=True).filter_by(id=id).first()
 
@@ -38,10 +38,10 @@ class ChoicesAltatestResource(Resource):
         
         return {"status": "Id Choice Altatest is not found"}, 404
 
-    #endpoint post choice altatest
+    # Endpoint post choice altatest
     @admin_required
     def post(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -73,30 +73,30 @@ class ChoicesAltatestResource(Resource):
         else:
             return {"status": "admin isn't at role super, council, and academic admin"}, 404
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in query or not
+        # Check id in query or not
         qry_choice_altatest = ChoicesAltatest.query.get(id)
         
         if qry_choice_altatest is None:
             return {'status': 'Choice Altatest is NOT_FOUND'}, 404
         
-        #input update status for soft delete
+        # Input update status for soft delete
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete      
+        # Change status for soft delete      
         qry_choice_altatest.status = args['status']
 
         db.session.commit()
 
         return marshal(qry_choice_altatest, ChoicesAltatest.response_fields), 200
 
-    #endpoint for update choice
+    # Endpoint for update choice
     @admin_required
     def patch(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -123,10 +123,10 @@ class ChoicesAltatestResource(Resource):
         else:
             return {"status": "admin isn't at role super, council, and academic admin"}, 404
 
-    #Endpoint delete choice Altatest by Id
+    # Endpoint delete choice Altatest by Id
     @admin_required
     def delete(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -146,14 +146,14 @@ class ChoicesAltatestResource(Resource):
 
 
 class ChoicesAltatestAll(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by choice and created_at
+    # Endpoint to get all and sort by choice and created_at
     @admin_required
     def get(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -194,11 +194,11 @@ class ChoicesAltatestAll(Resource):
 
 
 class ChoicesAltatestAllStatus(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
         
-    #endpoint to get all status of choice 
+    # Endpoint to get all status of choice 
     def get(self):
         qry_choice_altatest = ChoicesAltatest.query
 

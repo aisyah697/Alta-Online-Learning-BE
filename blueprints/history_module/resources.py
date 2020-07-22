@@ -33,11 +33,11 @@ api = Api(bp_history_module)
 
 
 class HistoriesModuleResource(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for search history module by id
+    # Endpoint for search history module by id
     def get(self, id=None):
         qry_history_module = HistoriesModule.query.filter_by(status=True).filter_by(id=id).first()
 
@@ -46,7 +46,7 @@ class HistoriesModuleResource(Resource):
         
         return {"status": "Id history module not found"}, 404
 
-    #endpoint for post history module
+    # Endpoint for post history module
     @mentee_required
     def post(self):
         parser = reqparse.RequestParser()
@@ -58,17 +58,17 @@ class HistoriesModuleResource(Resource):
         parser.add_argument("status", location="json", type=bool, default=True)
         args = parser.parse_args()
 
-        #Check module and mentee is existance in database
+        # Check module and mentee is existance in database
         qry_history_module = HistoriesModule.query.filter_by(module_id=args["module_id"]).filter_by(mentee_id=args["mentee_id"]).filter_by(status=True).all()
         if len(qry_history_module) > 0:
             return {"status": "Module and Mentee is already there"}, 404
 
-        #Check Id Mentee is in database or not
+        # Check Id Mentee is in database or not
         qry_mentee = Mentees.query.get(args["mentee_id"])
         if qry_mentee is None:
             return {"status": "ID Mentee is Not Found"}, 404
 
-        #Check Id Module is in database or not
+        # Check Id Module is in database or not
         qry_module = Modules.query.get(args["module_id"])
         if qry_module is None:
             return {"status": "ID Module is Not Found"}, 404
@@ -87,19 +87,19 @@ class HistoriesModuleResource(Resource):
 
         return marshal(result, HistoriesModule.response_fields), 200
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in query or not
+        # Check id in query or not
         qry_history_module = HistoriesModule.query.get(id)
         if qry_history_module is None:
             return {'status': 'History Module is NOT_FOUND'}, 404
 
-        #input update status 
+        # Input update status 
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete
+        # Change status for soft delete
         if args['status'] is not None:
             qry_history_module.status = args['status']
 
@@ -107,7 +107,7 @@ class HistoriesModuleResource(Resource):
 
         return marshal(qry_history_module, HistoriesModule.response_fields), 200
 
-    #endpoint for update field
+    # Endpoint for update field
     def patch(self, id):
         qry_history_module = HistoriesModule.query.filter_by(status=True).filter_by(id=id).first()
         if qry_history_module is None:
@@ -140,7 +140,7 @@ class HistoriesModuleResource(Resource):
 
         return marshal(qry_history_module, HistoriesModule.response_fields), 200
 
-    #endpoint for delete history module by id
+    # Endpoint for delete history module by id
     def delete(self, id):
         qry_history_module = HistoriesModule.query.get(id)
         
@@ -154,7 +154,7 @@ class HistoriesModuleResource(Resource):
 
 
 class HistoriesModuleAll(Resource):
-    #endpoint to get all and sort by score and created at
+    # Endpoint to get all and sort by score and created at
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)
@@ -189,46 +189,46 @@ class HistoriesModuleAll(Resource):
 
 
 class HistoriesModuleMentee(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to show all module per masing-masing mentee
+    # Endpoint to show all module per masing-masing mentee
     @mentee_required
     def get(self):
-        #get id mentee
+        # Get id mentee
         verify_jwt_in_request()
         claims = get_jwt_claims()
         mentee_id = claims["id"]
 
-        #get history module mentee
+        # Get history module mentee
         qry_history_module = HistoriesModule.query.filter_by(status=True).filter_by(mentee_id=mentee_id).all()
         
         histories_module = []
         for history_module in qry_history_module:
             history_module = marshal(history_module, HistoriesModule.response_fields)
 
-            #get module in database
+            # Get module in database
             qry_module = Modules.query.filter_by(status=True).filter_by(id=history_module["module_id"]).first()
             module = marshal(qry_module, Modules.response_fields)
 
-            #get admin in database
+            # Get admin in database
             qry_admin = Admins.query.get(module["admin_id"])
             admin = marshal(qry_admin, Admins.response_fields)
 
-            #input admin in object module
+            # Input admin in object module
             module["admin"] = admin
 
-            #input module in object history module
+            # Input module in object history module
             history_module["module"] = module
 
-            #get subject in database
+            # Get subject in database
             qry_subject = Subjects.query.filter_by(status=True).filter_by(module_id=module["id"]).all()
             subjects = []
             for subject in qry_subject:
                 subject = marshal(subject, Subjects.response_fields)
 
-                #get file_subject in database
+                # Get file_subject in database
                 qry_file_subject = FilesSubject.query.filter_by(status=True).filter_by(subject_id=subject["id"]).order_by(FilesSubject.category_file).all()
                 files_subject = []
                 for file_subject in qry_file_subject:
@@ -236,18 +236,18 @@ class HistoriesModuleMentee(Resource):
 
                     files_subject.append(file_subject)
 
-                #input file_subject in object subject
+                # Input file_subject in object subject
                 subject["file_subject"] = files_subject
 
-                #exam
+                # Exam
                 qry_exam = Exams.query.filter_by(status=True).filter_by(subject_id=subject["id"]).first()
                 exams = [marshal(qry_exam, Exams.response_fields)]
                 
-                #quiz
+                # Quiz
                 qry_quiz = Quizs.query.filter_by(status=True).filter_by(exam_id=exams[0]["id"]).first()
                 quizs = [marshal(qry_quiz, Quizs.response_fields)]
 
-                #question
+                # Question
                 qry_question = QuestionsQuiz.query.filter_by(status=True).filter_by(quiz_id=quizs[0]["id"]).all()
                 questions = []
                 for question in qry_question:
@@ -282,10 +282,10 @@ class HistoriesModuleMentee(Resource):
             
                 subjects.append(subject)
 
-            #input subject in object history module
+            # Input subject in object history module
             history_module["subject"] = subjects
 
-            #requirement
+            # Requirement
             qry_requirement = RequirementsModule.query.filter_by(module_id=history_module["module_id"]).all()
 
             requirements = []
@@ -300,10 +300,10 @@ class HistoriesModuleMentee(Resource):
 
         return histories_module, 200
 
-    #endpoint when register to post module per masing-masing mentee
+    # Endpoint when register to post module per masing-masing mentee
     @mentee_required
     def post(self):
-        #get id mentee
+        # Get id mentee
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -349,19 +349,19 @@ class HistoriesModuleMentee(Resource):
 
 
 class HistoriesModuleByIdPhase(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to show module per masing-masing mentee by id phase
+    # Endpoint to show module per masing-masing mentee by id phase
     @mentee_required
     def get(self, id=None):
-        #get id mentee
+        # Get id mentee
         verify_jwt_in_request()
         claims = get_jwt_claims()
         mentee_id = claims["id"]
 
-        #get history module mentee
+        # Get history module mentee
         qry_history_module = HistoriesModule.query.filter_by(status=True).filter_by(mentee_id=mentee_id).all()
         
         phase_id = int(id)
@@ -370,28 +370,28 @@ class HistoriesModuleByIdPhase(Resource):
         for history_module in qry_history_module:
             history_module = marshal(history_module, HistoriesModule.response_fields)
 
-            #get module in database
+            # Get module in database
             qry_module = Modules.query.filter_by(status=True).filter_by(id=history_module["module_id"]).first()
             module = marshal(qry_module, Modules.response_fields)
 
             if module["phase_id"] == phase_id:
-                #get admin in database
+                # Get admin in database
                 qry_admin = Admins.query.get(module["admin_id"])
                 admin = marshal(qry_admin, Admins.response_fields)
 
-                #input admin in object module
+                # Input admin in object module
                 module["admin"] = admin
 
-                #input module in object history module
+                # Input module in object history module
                 history_module["module"] = module
 
-                #get subject in database
+                # Get subject in database
                 qry_subject = Subjects.query.filter_by(status=True).filter_by(module_id=module["id"]).all()
                 subjects = []
                 for subject in qry_subject:
                     subject = marshal(subject, Subjects.response_fields)
 
-                    #get file_subject in database
+                    # Get file_subject in database
                     qry_file_subject = FilesSubject.query.filter_by(status=True).filter_by(subject_id=subject["id"]).order_by(FilesSubject.category_file).all()
                     files_subject = []
                     for file_subject in qry_file_subject:
@@ -399,18 +399,18 @@ class HistoriesModuleByIdPhase(Resource):
 
                         files_subject.append(file_subject)
 
-                    #input file_subject in object subject
+                    # Input file_subject in object subject
                     subject["file_subject"] = files_subject
 
-                    #exam
+                    # Exam
                     qry_exam = Exams.query.filter_by(status=True).filter_by(subject_id=subject["id"]).first()
                     exams = [marshal(qry_exam, Exams.response_fields)]
                     
-                    #quiz
+                    # Quiz
                     qry_quiz = Quizs.query.filter_by(status=True).filter_by(exam_id=exams[0]["id"]).first()
                     quizs = [marshal(qry_quiz, Quizs.response_fields)]
 
-                    #question
+                    # Question
                     qry_question = QuestionsQuiz.query.filter_by(status=True).filter_by(quiz_id=quizs[0]["id"]).all()
                     questions = []
                     for question in qry_question:
@@ -445,10 +445,10 @@ class HistoriesModuleByIdPhase(Resource):
                 
                     subjects.append(subject)
 
-                #input subject in object history module
+                # Input subject in object history module
                 history_module["subject"] = subjects
 
-                #requirement
+                # Requirement
                 qry_requirement = RequirementsModule.query.filter_by(module_id=history_module["module_id"]).all()
 
                 requirements = []
@@ -465,7 +465,7 @@ class HistoriesModuleByIdPhase(Resource):
 
 
 class HistoriesModuleAllStatus(Resource):
-    #endpoint to get all status of history subject
+    # Endpoint to get all status of history subject
     def get(self):
         qry_history_module = HistoriesModule.query
 

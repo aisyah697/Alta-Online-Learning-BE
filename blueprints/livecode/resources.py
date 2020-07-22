@@ -21,14 +21,14 @@ api = Api(bp_livecode)
 
 
 class LivecodesResource(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for get livecode by ID
+    # Endpoint for get livecode by ID
     @admin_required
     def get(self, id=None):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -45,10 +45,10 @@ class LivecodesResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint post livecode
+    # Endpoint post livecode
     @admin_required
     def post(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -61,13 +61,13 @@ class LivecodesResource(Resource):
             parser.add_argument("status", location="json", type=bool, default=True)
             args = parser.parse_args()
 
-            #check livecode is there in database or not
+            # Check livecode is there in database or not
             qry_livecode = Livecodes.query.filter_by(exam_id=args["exam_id"]).first()
 
             if qry_livecode is not None:
                 return {"status": "Livecode is already there for this subject"}, 404
 
-            #check exam_id that mentioned is in database or not
+            # Check exam_id that mentioned is in database or not
             qry_exam = Exams.query.filter_by(id=args["exam_id"]).first()
 
             if qry_exam is None:
@@ -89,30 +89,30 @@ class LivecodesResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in query or not
+        # Check id in query or not
         qry_livecode = Livecodes.query.get(id)
         
         if qry_livecode is None:
             return {'status': 'Livecode is NOT_FOUND'}, 404
         
-        #input update status for soft delete
+        # Input update status for soft delete
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete      
+        # Change status for soft delete      
         qry_livecode.status = args['status']
 
         db.session.commit()
 
         return marshal(qry_livecode, Livecodes.response_fields), 200
 
-    #endpoint for update livecode
+    # Endpoint for update livecode
     @admin_required
     def patch(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -147,10 +147,10 @@ class LivecodesResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #Endpoint delete livecode by Id
+    # Endpoint delete livecode by Id
     @admin_required
     def delete(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -170,14 +170,14 @@ class LivecodesResource(Resource):
 
 
 class LivecodesAll(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by exam_id
+    # Endpoint to get all and sort by exam_id
     @admin_required
     def get(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -213,11 +213,11 @@ class LivecodesAll(Resource):
 
 
 class LivecodesAllStatus(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all status of livecode
+    # Endpoint to get all status of livecode
     def get(self):
         qry_livecode = Livecodes.query
 

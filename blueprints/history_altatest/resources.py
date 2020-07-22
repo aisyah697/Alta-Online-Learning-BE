@@ -27,14 +27,14 @@ api = Api(bp_history_altatest)
 
 
 class HistoriesAltatestResource(Resource):
-    # endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    # endpoint for get history altatest by ID
+    # Endpoint for get history altatest by ID
     @mentee_required
     def get(self, id=None):
-        #get id mentee for filter history altatest
+        # Get id mentee for filter history altatest
         verify_jwt_in_request()
         claims = get_jwt_claims()
 
@@ -74,7 +74,7 @@ class HistoriesAltatestResource(Resource):
 
         return {"status": "Id History Altatest is not found"}, 404
 
-    # endpoint post history altatest
+    # Endpoint post history altatest
     @mentee_required
     def post(self):
         parser = reqparse.RequestParser()
@@ -82,7 +82,7 @@ class HistoriesAltatestResource(Resource):
         parser.add_argument("status", location="json", type=bool, default=True)
         args = parser.parse_args()
 
-        #check mentee already register for altatest or not
+        # Check mentee already register for altatest or not
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -98,7 +98,7 @@ class HistoriesAltatestResource(Resource):
         db.session.add(result)
         db.session.commit()
   
-        #check id altatest
+        # Check id altatest
         qry_altatest = Altatests.query.filter_by(status=True).filter_by(id=result.id).first()
         altatest = marshal(qry_altatest, Altatests.response_fields)
 
@@ -109,7 +109,7 @@ class HistoriesAltatestResource(Resource):
         is_complete = None
         status =  True
         
-        #get mentee_id from id authentification
+        # Get mentee_id from id authentification
         verify_jwt_in_request()
         claims = get_jwt_claims()
 
@@ -136,7 +136,7 @@ class HistoriesAltatestResource(Resource):
             db.session.add(detail)
             db.session.commit()
 
-        #show respond after post
+        # Show respond after post
         qry_history_altatest = HistoriesAltatest.query.filter_by(status=True).filter_by(id=result.id).first()
         history_altatest = marshal(qry_history_altatest, HistoriesAltatest.response_fields)
 
@@ -164,34 +164,34 @@ class HistoriesAltatestResource(Resource):
 
         return history_altatest, 200
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in query or not
+        # Check id in query or not
         qry_history_altatest = HistoriesAltatest.query.get(id)
         
         if qry_history_altatest is None:
             return {'status': 'History Altatest is NOT_FOUND'}, 404
         
-        #input update status for soft delete
+        # Input update status for soft delete
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete      
+        # Change status for soft delete      
         qry_history_altatest.status = args['status']
 
         db.session.commit()
 
         return marshal(qry_history_altatest, HistoriesAltatest.response_fields), 200
 
-    #endpoint for change score
+    # Endpoint for change score
     @jwt_required
     def patch(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
 
-        #check id in query or not
+        # Check id in query or not
         qry_history_altatest = HistoriesAltatest.query.filter_by(mentee_id=claims["id"]).first()
 
         if qry_history_altatest is None:
@@ -218,7 +218,7 @@ class HistoriesAltatestResource(Resource):
         return marshal(qry_history_altatest, HistoriesAltatest.response_fields), 200
 
 
-    #Endpoint delete history Altatest by Id
+    # Endpoint delete history Altatest by Id
     def delete(self, id):
         history_altatest = HistoriesAltatest.query.get(id)
 
@@ -232,11 +232,11 @@ class HistoriesAltatestResource(Resource):
 
 
 class HistoriesAltatestAll(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by score and created_at
+    # Endpoint to get all and sort by score and created_at
     @admin_required
     def get(self):
         parser = reqparse.RequestParser()
@@ -272,11 +272,11 @@ class HistoriesAltatestAll(Resource):
 
 
 class HistoriesCorrectionQuestion(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to correction question of altatest and calculate score, then input on database alatatest
+    # Endpoint to correction question of altatest and calculate score, then input on database alatatest
     @mentee_required
     def post(self, id=None):
         parser = reqparse.RequestParser()
@@ -285,36 +285,36 @@ class HistoriesCorrectionQuestion(Resource):
         parser.add_argument("answer_id", location="json", default=None)
         args = parser.parse_args()
 
-        #check input history_altatest in database there or not
+        # Check input history_altatest in database there or not
         qry_history_altatest = HistoriesAltatest.query.filter_by(id=args["history_altatest_id"]).filter_by(status=True).first()
         if qry_history_altatest is None:
             return {"status": "input history_altatest isn't in database"}, 403
 
-        #check mentee from token match with mentee from history_altatest
+        # Check mentee from token match with mentee from history_altatest
         verify_jwt_in_request()
         claims = get_jwt_claims()
 
         if claims["id"] != qry_history_altatest.mentee_id:
             return {"status": "mentee in token and history_altatest isn't match"}, 403
 
-        #check input question is in database or not
+        # Check input question is in database or not
         qry_question_altatest = QuestionsAltatest.query.filter_by(id=args["question_altatest_id"]).filter_by(status=True).first()
         if qry_question_altatest is None:
             return {"status": "input question isn't in database"}, 403
 
-        #check input answer isn't at database
+        # Check input answer isn't at database
         if args["answer_id"] is not None:
             qry_choice_altatest = ChoicesAltatest.query.filter_by(id=args["answer_id"]).filter_by(status=True).first()
             if qry_choice_altatest is None:
                 return {"status": "input answer isn't in database"}, 403
 
-        #check answer match with question or not?
+        # Check answer match with question or not?
         if args["answer_id"] is not None:
             answer = ChoicesAltatest.query.filter_by(id=args["answer_id"]).filter_by(status=True).first()
             if int(answer.question_id) != int(args["question_altatest_id"]):
                 return {"status": "input answer isn't in question"}, 403
 
-        #check input answer in one question is already there in database 
+        # Check input answer in one question is already there in database 
         correction_altatest = CorrectionsAltatest.query.filter_by(history_altatest_id=args["history_altatest_id"]).filter_by(question_altatest_id=args["question_altatest_id"]).filter_by(status=True).first()
         qry_choice_altatest = ChoicesAltatest.query.filter_by(id=args["answer_id"]).filter_by(status=True).first()
         
@@ -353,23 +353,23 @@ class HistoriesCorrectionQuestion(Resource):
 
             db.session.commit()
 
-        #Calculation Score for Altatest
-        #determine sum of question
+        # Calculation Score for Altatest
+        # Determine sum of question
         qry_altatest = Altatests.query.filter_by(id=qry_history_altatest.altatest_id).filter_by(status=True).first()
         qry_question = DetailsAltatest.query.filter_by(altatest_id=qry_altatest.id).filter_by(status=True).all()
         sum_question = len(qry_question)
 
-        #determine answer true
+        # Determine answer true
         sum_true = 0
         qry_correction_altatest = CorrectionsAltatest.query.filter_by(status=True).filter_by(history_altatest_id=args["history_altatest_id"]).all()
         for answer in qry_correction_altatest:
             if answer.is_correct == True:
                 sum_true += 1
 
-        #calculate score
+        # Calculate score
         score = round(sum_true * 100 / sum_question)
         
-        #input score in history altatest
+        # Input score in history altatest
         qry_history_altatest.score = score
         db.session.commit()
 
@@ -388,11 +388,11 @@ class HistoriesCorrectionQuestion(Resource):
 
 
 class HistoriesAltatestAllStatus(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
         
-    #endpoint to get all status of history altatest 
+    # Endpoint to get all status of history altatest 
     def get(self):
         qry_history_altatest = HistoriesAltatest.query
 

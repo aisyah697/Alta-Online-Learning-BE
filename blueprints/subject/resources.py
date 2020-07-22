@@ -31,14 +31,14 @@ api = Api(bp_subject)
 
 
 class SubjectsResource(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for search subject by id
+    # Endpoint for search subject by id
     @admin_required
     def get(self, id=None):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -53,10 +53,10 @@ class SubjectsResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint for post subject
+    # Endpoint for post subject
     @admin_required
     def post(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -69,7 +69,7 @@ class SubjectsResource(Resource):
             parser.add_argument("status", location="json", default=True, type=bool)
             args = parser.parse_args()
 
-            #check module_id
+            # Check module_id
             module_id = Modules.query.get(args["module_id"])
 
             if module_id is None:
@@ -91,34 +91,34 @@ class SubjectsResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in query or not
+        # Check id in query or not
         qry_subject = Subjects.query.get(id)
         if qry_subject is None:
             return {'status': 'Mentee is NOT_FOUND'}, 404
 
-        #input update status 
+        # Input update status 
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete
+        # Change status for soft delete
         qry_subject.status = args["status"]
 
         db.session.commit()
 
         return marshal(qry_subject, Subjects.response_fields), 200
 
-    #endpoint for update field
+    # Endpoint for update field
     @admin_required
     def patch(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
         if claims["role"] == "super" or claims["role"] == "academic":
-            #check id in querry or not
+            # Check id in querry or not
             qry_subject = Subjects.query.filter_by(status=True).filter_by(id=id).first()
             if qry_subject is None:
                 return {'status': 'Mentee is NOT_FOUND'}, 404
@@ -145,10 +145,10 @@ class SubjectsResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint for delete subject by id
+    # Endpoint for delete subject by id
     @admin_required
     def delete(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -168,14 +168,14 @@ class SubjectsResource(Resource):
 
 
 class SubjectsAll(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by name & modul_id
+    # Endpoint to get all and sort by name & modul_id
     @admin_required
     def get(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -219,7 +219,7 @@ class SubjectsAll(Resource):
 
 
 class SubjectNestedById(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
@@ -229,13 +229,13 @@ class SubjectNestedById(Resource):
         claims = get_jwt_claims()
         
         if claims["role"] == "super" or claims["role"] == "academic":
-            #Subject
+            # Subject
             qry_subject = Subjects.query.get(id)
             
             if qry_subject is not None and qry_subject.status == True:
                 subject = marshal(qry_subject, Subjects.response_fields)
 
-                #File Subject
+                # File Subject
                 qry_file_subject = FilesSubject.query.filter_by(subject_id=subject["id"]).all()
                 
                 videos = []
@@ -252,15 +252,15 @@ class SubjectNestedById(Resource):
                 subject["video"] = videos
                 subject["presentation"] = presentations
 
-                #exam
+                # Exam
                 qry_exam = Exams.query.filter_by(status=True).filter_by(subject_id=subject["id"]).first()
                 exams = [marshal(qry_exam, Exams.response_fields)]
 
-                #quiz
+                # Quiz
                 qry_quiz = Quizs.query.filter_by(status=True).filter_by(exam_id=exams[0]["id"]).first()
                 quizs = [marshal(qry_quiz, Quizs.response_fields)]
 
-                #question
+                # Question
                 qry_question = QuestionsQuiz.query.filter_by(quiz_id=quizs[0]["id"]).all()
                 questions = []
                 for question in qry_question:
@@ -303,7 +303,7 @@ class SubjectNestedById(Resource):
 
 
 class SubjectNestedAll(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
@@ -340,7 +340,7 @@ class SubjectNestedAll(Resource):
             for subject in qry_subject.limit(args['rp']).offset(offset).all():
                 if subject.status == True:
                     subject = marshal(subject, Subjects.response_fields)
-                    #File Subject
+                    # File Subject
                     qry_file_subject = FilesSubject.query.filter_by(subject_id=subject["id"]).all()
                     
                     videos = []
@@ -357,15 +357,15 @@ class SubjectNestedAll(Resource):
                     subject["video"] = videos
                     subject["presentation"] = presentations
 
-                    #exam
+                    # Exam
                     qry_exam = Exams.query.filter_by(status=True).filter_by(subject_id=subject["id"]).first()
                     exams = [marshal(qry_exam, Exams.response_fields)]
                     
-                    #quiz
+                    # Quiz
                     qry_quiz = Quizs.query.filter_by(status=True).filter_by(exam_id=exams[0]["id"]).first()
                     quizs = [marshal(qry_quiz, Quizs.response_fields)]
 
-                    #question
+                    # Question
                     qry_question = QuestionsQuiz.query.filter_by(quiz_id=quizs[0]["id"]).all()
                     questions = []
                     for question in qry_question:
@@ -407,11 +407,11 @@ class SubjectNestedAll(Resource):
 
 
 class SubjectsAllStatus(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all status of subject
+    # Endpoint to get all status of subject
     def get(self):
         qry_subject = Subjects.query
 

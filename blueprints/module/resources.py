@@ -34,11 +34,11 @@ api = Api(bp_module)
 
 
 class ModulesResource(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for search module by id
+    # Endpoint for search module by id
     @admin_required
     def get(self, id=None):
         #check role admin
@@ -56,10 +56,10 @@ class ModulesResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint for post module
+    # Endpoint for post module
     @admin_required
     def post(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -73,25 +73,25 @@ class ModulesResource(Resource):
             parser.add_argument("status", location="form", default="True")
             args = parser.parse_args()
 
-            #check phase_id
+            # Check phase_id
             phase_id = Phases.query.get(args["phase_id"])
 
             if phase_id is None:
                 return {"status": "Phase isn't in database"}, 404
 
-            #check admin_id
+            # Check admin_id
             admin_id = Admins.query.get(args["admin_id"])
 
             if admin_id is None:
                 return {"status": "Admin isn't in database"}, 404
 
-            #for status, status used to soft delete 
+            # For status, status used to soft delete 
             if args["status"] == "True" or args["status"] == "true":
                 args["status"] = True
             elif args["status"] == "False" or args["status"] == "false":
                 args["status"] = False
             
-            #for upload image in storage
+            # For upload image in storage
             module_image = args["image"]
 
             if module_image:
@@ -109,7 +109,7 @@ class ModulesResource(Resource):
                 # Image Uploaded
                 s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="image/"+filename_key, Body=filename_body, ACL='public-read')
 
-                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/image/" + str(filename_key)
+                filename = "https://alta-online-learning.s3-ap-southeast-1.amazonaws.com/image/" + str(filename_key)
                 filename = filename.replace(" ", "+")
             
             else:
@@ -132,19 +132,19 @@ class ModulesResource(Resource):
         else:
             return {"status": "admin isn't at role super admin"}, 404
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in querry or not
+        # Check id in querry or not
         qry_module = Modules.query.get(id)
         if qry_module is None:
             return {'status': 'Module is NOT_FOUND'}, 404
 
-        #input update status 
+        # Input update status 
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="form")
         args = parser.parse_args()
         
-        #change status for soft delete
+        # Change status for soft delete
         if args['status'] is not None:
             if args["status"] == "True" or args["status"] == "true":
                 args["status"] = True
@@ -159,10 +159,10 @@ class ModulesResource(Resource):
 
         return marshal(qry_module, Modules.response_fields), 200
 
-    #endpoint for update field
+    # Endpoint for update field
     @admin_required
     def patch(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -192,10 +192,10 @@ class ModulesResource(Resource):
                 qry_module.description = args['description']
 
             if args['image'] is not None:
-                #Check image in query
+                # Check image in query
                 if qry_module.image is not None:
                     filename = qry_module.image
-                    #remove image in storage
+                    # Remove image in storage
                     filename = "image/"+filename.split("/")[-1]
                     filename = filename.replace("+", " ")
 
@@ -208,7 +208,7 @@ class ModulesResource(Resource):
 
                     s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
     
-                    # #change image in storage
+                    # Change image in storage
                     image = args["image"]
 
                     randomstr = uuid.uuid4().hex
@@ -225,7 +225,7 @@ class ModulesResource(Resource):
                     # Image Uploaded
                     s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="image/"+filename_key, Body=filename_body, ACL='public-read')
 
-                    filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/image/" + str(filename_key)
+                    filename = "https://alta-online-learning.s3-ap-southeast-1.amazonaws.com/image/" + str(filename_key)
                     filename = filename.replace(" ", "+")
 
                     qry_module.image = filename
@@ -247,7 +247,7 @@ class ModulesResource(Resource):
                     # Image Uploaded
                     s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="image/"+filename_key, Body=filename_body, ACL='public-read')
 
-                    filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/image/" + str(filename_key)
+                    filename = "https://alta-online-learning.s3-ap-southeast-1.amazonaws.com/image/" + str(filename_key)
                     filename = filename.replace(" ", "+")
 
                     qry_module.image = filename
@@ -259,10 +259,10 @@ class ModulesResource(Resource):
         else:
             return {"status": "admin isn't at role super admin"}, 404
 
-    #endpoint for delete module by id
+    # Endpoint for delete module by id
     @admin_required
     def delete(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -272,7 +272,7 @@ class ModulesResource(Resource):
             if module is not None:
                 filename = module.image
                 if filename is not None:
-                    #remove image in storage
+                    # Remove image in storage
                     filename = "image/"+filename.split("/")[-1]
                     filename = filename.replace("+", " ")
 
@@ -285,7 +285,7 @@ class ModulesResource(Resource):
 
                     s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
                 
-                #remove database
+                # Remove database
                 db.session.delete(module)
                 db.session.commit()
                 return {"status": "DELETED SUCCESS"}, 200
@@ -297,14 +297,14 @@ class ModulesResource(Resource):
 
 
 class ModulesAll(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by admin_id, phase_id and name
+    # Endpoint to get all and sort by admin_id, phase_id and name
     @admin_required
     def get(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -350,7 +350,7 @@ class ModulesAll(Resource):
 
 
 class ModuleNestedById(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
@@ -360,26 +360,26 @@ class ModuleNestedById(Resource):
         claims = get_jwt_claims()
         
         if claims["role"] == "super" or claims["role"] == "academic":
-            #Module
+            # Module
             qry_module = Modules.query.get(id)
             
             if qry_module is not None and qry_module.status == True:
                 module = marshal(qry_module, Modules.response_fields)
 
                 if claims["id"] == module["admin_id"] or claims["role"] == "super":
-                    #admin
+                    # Admin
                     qry_admin = Admins.query.filter_by(id=module["admin_id"]).first()
                     admin = marshal(qry_admin, Admins.response_fields)
                     module["admin"] = admin
 
-                    #Subject
+                    # Subject
                     qry_subject = Subjects.query.filter_by(module_id=module["id"]).all()
                     
                     subjects = []
                     for subject in qry_subject:
                         if subject.status == True:
                             subject = marshal(subject, Subjects.response_fields)
-                            #File Subject
+                            # File Subject
                             qry_file_subject = FilesSubject.query.filter_by(subject_id=subject["id"]).all()
                             
                             videos = []
@@ -396,15 +396,15 @@ class ModuleNestedById(Resource):
                             subject["video"] = videos
                             subject["presentation"] = presentations
 
-                            #exam
+                            # Exam
                             qry_exam = Exams.query.filter_by(status=True).filter_by(subject_id=subject["id"]).first()
                             exams = [marshal(qry_exam, Exams.response_fields)]
                             
-                            #quiz
+                            # Quiz
                             qry_quiz = Quizs.query.filter_by(status=True).filter_by(exam_id=exams[0]["id"]).first()
                             quizs = [marshal(qry_quiz, Quizs.response_fields)]
 
-                            #question
+                            # Question
                             qry_question = QuestionsQuiz.query.filter_by(quiz_id=quizs[0]["id"]).all()
                             questions = []
                             for question in qry_question:
@@ -439,7 +439,7 @@ class ModuleNestedById(Resource):
 
                             subjects.append(subject)
                     
-                    #requirement
+                    # Requirement
                     qry_requirement = RequirementsModule.query.filter_by(module_id=module["id"]).all()
 
                     requirements = []
@@ -464,7 +464,7 @@ class ModuleNestedById(Resource):
 
 
 class ModuleNestedAll(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
@@ -507,7 +507,7 @@ class ModuleNestedAll(Resource):
                 if module.status == True and (module.admin_id == claims["id"] or claims["role"] == "super"):
                     module = marshal(module, Modules.response_fields)
 
-                    #admin
+                    # Admin
                     qry_admin = Admins.query.filter_by(id=module["admin_id"]).first()
                     admin = marshal(qry_admin, Admins.response_fields)
                     module["admin"] = admin
@@ -517,7 +517,7 @@ class ModuleNestedAll(Resource):
                     for subject in qry_subject:
                         if subject.status == True:
                             subject = marshal(subject, Subjects.response_fields)
-                            #File Subject
+                            # File Subject
                             qry_file_subject = FilesSubject.query.filter_by(subject_id=subject["id"]).all()
                             
                             videos = []
@@ -534,15 +534,15 @@ class ModuleNestedAll(Resource):
                             subject["video"] = videos
                             subject["presentation"] = presentations
 
-                            #exam
+                            # Exam
                             qry_exam = Exams.query.filter_by(status=True).filter_by(subject_id=subject["id"]).first()
                             exams = [marshal(qry_exam, Exams.response_fields)]
                             
-                            #quiz
+                            # Quiz
                             qry_quiz = Quizs.query.filter_by(status=True).filter_by(exam_id=exams[0]["id"]).first()
                             quizs = [marshal(qry_quiz, Quizs.response_fields)]
 
-                            #question
+                            # Question
                             qry_question = QuestionsQuiz.query.filter_by(quiz_id=quizs[0]["id"]).all()
                             questions = []
                             for question in qry_question:
@@ -577,7 +577,7 @@ class ModuleNestedAll(Resource):
 
                             subjects.append(subject)
                     
-                    #requirement
+                    # Requirement
                     qry_requirement = RequirementsModule.query.filter_by(module_id=module["id"]).all()
 
                     requirements = []
@@ -598,11 +598,11 @@ class ModuleNestedAll(Resource):
 
 
 class ModulesAllStatus(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
     
-    #endpoint to get all status of module
+    # Endpoint to get all status of module
     def get(self):
         qry_module = Modules.query
 

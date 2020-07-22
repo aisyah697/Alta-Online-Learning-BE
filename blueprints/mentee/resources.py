@@ -34,11 +34,11 @@ api = Api(bp_mentee)
 
 
 class MenteesResource(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for search mentee by id
+    # Endpoint for search mentee by id
     def get(self, id=None):
         qry_mentee = Mentees.query.filter_by(status=True).filter_by(id=id).first()
 
@@ -47,7 +47,7 @@ class MenteesResource(Resource):
         
         return {"status": "Id Mentees not found"}, 404
 
-    #endpoint for post mentee
+    # Endpoint for post mentee
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument("username", location="form", required=True)
@@ -65,38 +65,38 @@ class MenteesResource(Resource):
         parser.add_argument("status", location="form", default="True")
         args = parser.parse_args()
 
-        #check existance username
+        # Check existance username
         mentee = Mentees.query.filter_by(status=True).filter_by(username=args["username"]).first()
         if mentee is not None:
             return {"status": "username existance"}, 404
 
-        #check username
+        # Check username
         if len(args["username"]) < 6:
             return {"status": "username must be at least 6 character"}, 404
 
-        #check phone number
+        # Check phone number
         if args["phone"] is not None:
             phone = re.findall("^0[0-9]{7,14}", args["phone"])
             if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
                 return {"status": "phone number not match"}, 404
 
-        #check password
+        # Check password
         if len(args["password"]) < 6:
             return {"status": "password must be at least 6 character"}, 404
 
-        #check email
+        # Check email
         if args["email"] is not None:
             match=re.search("^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$", args["email"])
             if match is None:
                 return {"status": "your input of email is wrong"}, 404
 
-        #for status, status used to soft delete 
+        # For status, status used to soft delete 
         if args["status"] == "True" or args["status"] == "true":
             args["status"] = True
         elif args["status"] == "False" or args["status"] == "false":
             args["status"] = False
 
-        #for upload image in storage
+        # For upload image in storage
         avatar = args["avatar"]
 
         if avatar:
@@ -114,13 +114,13 @@ class MenteesResource(Resource):
             # Image Uploaded
             s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="avatar/"+filename_key, Body=filename_body, ACL='public-read')
 
-            filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
+            filename = "https://alta-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
             filename = filename.replace(" ", "+")
         
         else:
             filename = None
 
-        #for filled salt on field's table of mentee
+        # For filled salt on field's table of mentee
         salt = uuid.uuid4().hex
         encoded = ("%s%s" % (args["password"], salt)).encode("utf-8")
         hash_pass = hashlib.sha512(encoded).hexdigest()
@@ -145,30 +145,30 @@ class MenteesResource(Resource):
         db.session.add(result)
         db.session.commit()
 
-        #for get token when register
+        # For get token when register
         jwt_username = marshal(result, Mentees.jwt_claims_fields)
         jwt_username["status"] = "mentee"
         token = create_access_token(identity=args["username"], user_claims=jwt_username)
 
-        #add key token in response of endpoint
+        # Add key token in response of endpoint
         result = marshal(result, Mentees.response_fields)
         result["token"] = token
 
         return result, 200
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in query or not
+        # Check id in query or not
         qry_mentee = Mentees.query.get(id)
         if qry_mentee is None:
             return {'status': 'Mentee is NOT_FOUND'}, 404
         
-        #input update status 
+        # Input update status 
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="form")
         args = parser.parse_args()
         
-        #change status for soft delete
+        # Change status for soft delete
         if args['status'] is not None:
             if args["status"] == "True" or args["status"] == "true":
                 args["status"] = True
@@ -183,7 +183,7 @@ class MenteesResource(Resource):
 
         return marshal(qry_mentee, Mentees.response_fields), 200
 
-    #endpoint for update field
+    # Endpoint for update field
     @mentee_required
     def patch(self, id):
         qry_mentee = Mentees.query.filter_by(status=True).filter_by(id=id).first()
@@ -206,13 +206,13 @@ class MenteesResource(Resource):
         args = parser.parse_args()
 
         if args['username'] is not None:
-            #check username
+            # Check username
             if len(args["username"]) < 6:
                 return {"status": "username must be at least 6 character"}, 404
             qry_mentee.username = args['username']
 
         if args['password'] is not None:
-            #cek password
+            # Check password
             if len(args["password"]) < 6:
                 return {"status": "password must be 6 character"}, 404
             encoded = ("%s%s" % (args["password"], qry_mentee.salt)).encode("utf-8")
@@ -223,7 +223,7 @@ class MenteesResource(Resource):
             qry_mentee.full_name = args['full_name']
 
         if args['email'] is not None:
-            #check email
+            # Check email
             match=re.search("^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$", args["email"])
             if match is None:
                 return {"status": "your input of email is wrong"}, 404
@@ -233,7 +233,7 @@ class MenteesResource(Resource):
             qry_mentee.address = args['address']
 
         if args['phone'] is not None:
-            #cek phone number
+            # Check phone number
             phone = re.findall("^0[0-9]{7,14}", args["phone"])
             if phone == [] or phone[0] != str(args['phone']) or len(args["phone"]) > 15:
                 return {"status": "phone number not match"}, 404
@@ -246,10 +246,10 @@ class MenteesResource(Resource):
             qry_mentee.date_birth = args['date_birth']
 
         if args['avatar'] is not None:
-            #Check avatar in query
+            # Check avatar in query
             if qry_mentee.avatar is not None:
                 filename = qry_mentee.avatar
-                #remove avatar in storage
+                # Remove avatar in storage
                 filename = "avatar/"+filename.split("/")[-1]
                 filename = filename.replace("+", " ")
 
@@ -262,7 +262,7 @@ class MenteesResource(Resource):
 
                 s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
  
-                # #change avatar in storage
+                # Change avatar in storage
                 avatar = args["avatar"]
 
                 randomstr = uuid.uuid4().hex
@@ -279,7 +279,7 @@ class MenteesResource(Resource):
                 # Image Uploaded
                 s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="avatar/"+filename_key, Body=filename_body, ACL='public-read')
 
-                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
+                filename = "https://alta-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
                 filename = filename.replace(" ", "+")
 
                 qry_mentee.avatar = filename
@@ -301,7 +301,7 @@ class MenteesResource(Resource):
                 # Image Uploaded
                 s3.put_object(Bucket=app.config["BUCKET_NAME"], Key="avatar/"+filename_key, Body=filename_body, ACL='public-read')
 
-                filename = "https://alterra-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
+                filename = "https://alta-online-learning.s3-ap-southeast-1.amazonaws.com/avatar/" + str(filename_key)
                 filename = filename.replace(" ", "+")
 
                 qry_mentee.avatar = filename
@@ -319,14 +319,14 @@ class MenteesResource(Resource):
 
         return marshal(qry_mentee, Mentees.response_fields), 200
 
-    #endpoint for delete mentee by id
+    # Endpoint for delete mentee by id
     def delete(self, id):
         mentee = Mentees.query.get(id)
         
         if mentee is not None:
             filename = mentee.avatar
             if filename is not None:
-                #remove avatar in storage
+                # Remove avatar in storage
                 filename = "avatar/"+filename.split("/")[-1]
                 filename = filename.replace("+", " ")
 
@@ -339,7 +339,7 @@ class MenteesResource(Resource):
 
                 s3.delete_object(Bucket=app.config["BUCKET_NAME"], Key=filename)
             
-            #remove database
+            # Remove database
             db.session.delete(mentee)
             db.session.commit()
             return {"status": "DELETED SUCCESS"}, 200
@@ -348,11 +348,11 @@ class MenteesResource(Resource):
 
 
 class MenteesAll(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by username, full_name and role
+    # Endpoint to get all and sort by username, full_name and role
     @admin_required
     def get(self):
         parser = reqparse.RequestParser()
@@ -398,11 +398,11 @@ class MenteesAll(Resource):
 
 
 class MenteesHistoryScore(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #get profile mentee and history score
+    # Get profile mentee and history score
     @jwt_required
     def get(self, id):
         qry_mentee = Mentees.query.filter_by(status=True).filter_by(id=id).first()
@@ -410,12 +410,12 @@ class MenteesHistoryScore(Resource):
         if qry_mentee is not None:
             mentee = marshal(qry_mentee, Mentees.response_fields)
             
-            #altatest
+            # Altatest
             altatest = HistoriesAltatest.query.filter_by(mentee_id=id).filter_by(status=True).first()
 
             mentee["altatest"] = altatest.score
 
-            #history_phase
+            # History_phase
             qry_history_phase = HistoriesPhase.query.filter_by(mentee_id=id).filter_by(status=True).all()
 
             histories_phase = []
@@ -426,7 +426,7 @@ class MenteesHistoryScore(Resource):
                 history_phase["name_phase"] = phase
                 phase = history_phase["phase_id"]
                 
-                #check same phase id
+                # Check same phase id
                 qry_history_module = HistoriesModule.query.filter_by(status=True).filter_by(mentee_id=id).all()
                 histories_module = []
                 for history_module in qry_history_module:
@@ -434,7 +434,7 @@ class MenteesHistoryScore(Resource):
                     if module.phase_id == phase:
                         histories_module.append(history_module)
                 
-                #input module in the same phase
+                # Input module in the same phase
                 modules = []
                 for history_module in histories_module:
                     history_module = marshal(history_module, HistoriesModule.response_fields)
@@ -443,7 +443,7 @@ class MenteesHistoryScore(Resource):
                     history_module["name_module"] = module
                     module = history_module["module_id"]
 
-                    #check same module id
+                    # Check same module id
                     qry_history_subject = HistoriesSubject.query.filter_by(status=True).filter_by(mentee_id=id).all()
                     histories_subject = []
                     for history_subject in qry_history_subject:
@@ -451,7 +451,7 @@ class MenteesHistoryScore(Resource):
                         if subject.module_id == module:
                             histories_subject.append(history_subject)
 
-                    #input subject in the same module
+                    # Input subject in the same module
                     subjects = []
                     for history_subject in histories_subject:
                         history_subject = marshal(history_subject, HistoriesSubject.response_fields)
@@ -459,7 +459,7 @@ class MenteesHistoryScore(Resource):
                         subject = marshal(subject, Subjects.response_fields)
                         history_subject["name_subject"] = subject
                         
-                        #get score exam
+                        # Get score exam
                         qry_exam = Exams.query.filter_by(subject_id=history_subject["subject_id"]).filter_by(status=True).first()
                         score_exam = []
                         if qry_exam is not None:
@@ -488,11 +488,11 @@ class MenteesHistoryScore(Resource):
 
 
 class MenteesAllStatus(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
         
-    #endpoint to get all status of mentee 
+    # Endpoint to get all status of mentee 
     def get(self):
         qry_mentee = Mentees.query
 

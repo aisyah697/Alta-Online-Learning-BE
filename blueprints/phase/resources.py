@@ -23,14 +23,14 @@ bp_phase = Blueprint("phase", __name__)
 api = Api(bp_phase)
 
 class PhasesResource(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for get phases by ID
+    # Endpoint for get phases by ID
     @admin_required
     def get(self, id=None):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -47,10 +47,10 @@ class PhasesResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint post phase
+    # Endpoint post phase
     @admin_required
     def post(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -75,46 +75,46 @@ class PhasesResource(Resource):
         else:
             return {"status": "admin isn't at role super admin"}, 404
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in query or not
+        # Check id in query or not
         qry_phase = Phases.query.get(id)
         
         if qry_phase is None:
             return {'status': 'Phase is NOT_FOUND'}, 404
         
-        #input update status for soft delete
+        # Input update status for soft delete
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete      
+        # Change status for soft delete      
         qry_phase.status = args['status']
 
         db.session.commit()
 
         return marshal(qry_phase, Phases.response_fields), 200
     
-    #endpoint for edit phase
+    # Endpoint for edit phase
     @admin_required
     def patch(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
         if claims["role"] == "super":
-            #check id in query or not
+            # Check id in query or not
             qry_phase = Phases.query.get(id)
             
             if qry_phase is None:
                 return {'status': 'Phase is NOT_FOUND'}, 404
             
-            #input update description phase
+            # Input update description phase
             parser = reqparse.RequestParser()
             parser.add_argument("description", location="json")
             args = parser.parse_args()
             
-            #change description phase     
+            # Change description phase     
             if args['description'] is not None:
                 qry_phase.description = args['description']
 
@@ -125,10 +125,10 @@ class PhasesResource(Resource):
         else:
             return {"status": "admin isn't at role super admin"}, 404
 
-    #Endpoint delete phase by Id
+    # Endpoint delete phase by Id
     @admin_required
     def delete(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -148,14 +148,14 @@ class PhasesResource(Resource):
 
 
 class PhasesAll(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by choice and created_at
+    # Endpoint to get all and sort by choice and created_at
     @admin_required
     def get(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -196,7 +196,7 @@ class PhasesAll(Resource):
 
 
 class PhaseNestedById(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
@@ -242,7 +242,7 @@ class PhaseNestedById(Resource):
 
 
 class PhaseNestedAll(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
@@ -308,11 +308,11 @@ class PhaseNestedAll(Resource):
 
 
 class PhasesAllStatus(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all status of choice 
+    # Endpoint to get all status of choice 
     def get(self):
         qry_phase = Phases.query
 

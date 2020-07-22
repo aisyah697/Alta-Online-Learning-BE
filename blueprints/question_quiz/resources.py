@@ -24,14 +24,14 @@ api = Api(bp_question_quiz)
 
 
 class QuestionsQuizResource(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for get questions by ID
+    # Endpoint for get questions by ID
     @admin_required
     def get(self, id=None):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -57,10 +57,10 @@ class QuestionsQuizResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint post question quiz
+    # Endpoint post question quiz
     @admin_required
     def post(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -71,7 +71,7 @@ class QuestionsQuizResource(Resource):
             parser.add_argument("status", location="json", type=bool, default=True)
             args = parser.parse_args()
 
-            #check quiz_id
+            # Check quiz_id
             quiz_id = Quizs.query.get(args["quiz_id"])
 
             if quiz_id is None:
@@ -91,30 +91,30 @@ class QuestionsQuizResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in query or not
+        # Check id in query or not
         qry_question_quiz = QuestionsQuiz.query.get(id)
         
         if qry_question_quiz is None:
             return {'status': 'Question quiz is NOT_FOUND'}, 404
         
-        #input update status 
+        # Input update status 
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete      
+        # Change status for soft delete      
         qry_question_quiz.status = args['status']
 
         db.session.commit()
 
         return marshal(qry_question_quiz, QuestionsQuiz.response_fields), 200
 
-    #endpoint for update question
+    # Endpoint for update question
     @admin_required
     def patch(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -137,10 +137,10 @@ class QuestionsQuizResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint to delete question by id
+    # Endpoint to delete question by id
     @admin_required
     def delete(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -160,14 +160,14 @@ class QuestionsQuizResource(Resource):
 
 
 class QuestionsQuizAll(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by question and created_at
+    # Endpoint to get all and sort by question and created_at
     @admin_required
     def get(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -208,7 +208,7 @@ class QuestionsQuizAll(Resource):
 
 
 class QuestionsQuizAllStatus(Resource):
-    #endpoint to get all status of question 
+    # Endpoint to get all status of question 
     def get(self):
         qry_question_quiz = QuestionsQuiz.query
 

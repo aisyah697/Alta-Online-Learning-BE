@@ -23,14 +23,14 @@ api = Api(bp_exam)
 
 
 class ExamsResource(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for search exam by id
+    # Endpoint for search exam by id
     @admin_required
     def get(self, id=None):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -45,10 +45,10 @@ class ExamsResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint for post exam
+    # Endpoint for post exam
     @admin_required
     def post(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -59,13 +59,13 @@ class ExamsResource(Resource):
             parser.add_argument("status", location="json", type=bool, default=True)
             args = parser.parse_args()
 
-            #check subject_id
+            # Check subject_id
             subject_id = Subjects.query.get(args["subject_id"])
 
             if subject_id is None:
                 return {"status": "Subject isn't in database"}, 404
 
-            #Check there no same subject_id
+            # Check there no same subject_id
             subject_id_exam = Exams.query.filter_by(subject_id=args["subject_id"]).first()
             
             if subject_id_exam is not None:
@@ -85,20 +85,20 @@ class ExamsResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
-        #check id in query or not
+        # Check id in query or not
         qry_exam = Exams.query.get(id)
         
         if qry_exam is None:
             return {'status': 'Exam is NOT_FOUND'}, 404
         
-        #input update status for soft delete
+        # Input update status for soft delete
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete
+        # Change status for soft delete
         if args["status"] is not None:      
             qry_exam.status = args['status']
 
@@ -106,15 +106,15 @@ class ExamsResource(Resource):
 
         return marshal(qry_exam, Exams.response_fields), 200
 
-    #endpoint for update field
+    # Endpoint for update field
     @admin_required
     def patch(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
         if claims["role"] == "super" or claims["role"] == "academic":        
-            #check id in querry or not
+            # Check id in querry or not
             qry_exam = Exams.query.filter_by(status=True).filter_by(id=id).first()
             if qry_exam is None:
                 return {'status': 'Exam is NOT_FOUND'}, 404
@@ -137,10 +137,10 @@ class ExamsResource(Resource):
         else:
             return {"status": "admin isn't at role super admin and academic admin"}, 404
 
-    #Endpoint delete file subject by Id
+    # Endpoint delete file subject by Id
     @admin_required
     def delete(self, id):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -160,14 +160,14 @@ class ExamsResource(Resource):
 
 
 class ExamsAll(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by subject_id and type_exam
+    # Endpoint to get all and sort by subject_id and type_exam
     @admin_required
     def get(self):
-        #check role admin
+        # Check role admin
         verify_jwt_in_request()
         claims = get_jwt_claims()
         
@@ -208,11 +208,11 @@ class ExamsAll(Resource):
 
 
 class ExamsAllStatus(Resource):
-    #endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all status of exa,
+    # Endpoint to get all status of exa,
     def get(self):
         qry_exam = Exams.query
 

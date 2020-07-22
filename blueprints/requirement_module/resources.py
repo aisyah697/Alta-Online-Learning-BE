@@ -13,11 +13,11 @@ api = Api(bp_requirement_module)
 
 
 class RequirementsModuleResource(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for search requirement module by id
+    # Endpoint for search requirement module by id
     def get(self, id=None):
         qry_requirement_module = RequirementsModule.query.filter_by(status=True).filter_by(id=id).first()
 
@@ -26,7 +26,7 @@ class RequirementsModuleResource(Resource):
         
         return {"status": "Id Requirement Module not found"}, 404
 
-    #endpoint for post requirement module
+    # Endpoint for post requirement module
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument("module_id", location="json", required=True)
@@ -45,28 +45,28 @@ class RequirementsModuleResource(Resource):
 
         return marshal(result, RequirementsModule.response_fields), 200
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
         #check id in querry or not
         qry_requirement_module = RequirementsModule.query.get(id)
         if qry_requirement_module is None:
             return {'status': 'Requirement Module is NOT_FOUND'}, 404
 
-        #input update status 
+        # Input update status 
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete
+        # Change status for soft delete
         qry_requirement_module.status = args["status"]
 
         db.session.commit()
 
         return marshal(qry_requirement_module, RequirementsModule.response_fields), 200
 
-    #endpoint for update field
+    # Endpoint for update field
     def patch(self, id):        
-        #check id in querry or not
+        # Check id in querry or not
         qry_requirement_module = RequirementsModule.query.filter_by(status=True).filter_by(id=id).first()
         if qry_requirement_module is None:
             return {'status': 'Requirement Module is NOT_FOUND'}, 404
@@ -82,7 +82,7 @@ class RequirementsModuleResource(Resource):
 
         return marshal(qry_requirement_module, RequirementsModule.response_fields), 200
 
-    #endpoint for delete requirement module by id
+    # Endpoint for delete requirement module by id
     def delete(self, id):
         qry_requirement_module = RequirementsModule.query.get(id)
         
@@ -96,11 +96,11 @@ class RequirementsModuleResource(Resource):
 
 
 class RequirementsModuleAll(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by modul_id
+    # Endpoint to get all and sort by modul_id
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)
@@ -130,7 +130,7 @@ class RequirementsModuleAll(Resource):
 
 
 class RequirementsModuleAllStatus(Resource):
-    #endpoint to get all status of requirement module
+    # Endpoint to get all status of requirement module
     def get(self):
         qry_requirement_module = RequirementsModule.query
 

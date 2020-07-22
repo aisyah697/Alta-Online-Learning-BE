@@ -30,22 +30,22 @@ bp_correction_exam = Blueprint("correction_exam", __name__)
 api = Api(bp_correction_exam)
 
 class CorrectionsExamResource(Resource):
-    # endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for show correction quiz
+    # Endpoint for show correction quiz
     @mentee_required
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument("question_quiz_id", location="json", required=True)
         args = parser.parse_args()
         
-        #get mentee_id from id authentification
+        # Get mentee_id from id authentification
         verify_jwt_in_request()
         claims = get_jwt_claims()
 
-        #get history_altatest_id from mentee_id
+        # Get history_altatest_id from mentee_id
         qry_history_exam = HistoriesExam.query.filter_by(mentee_id=claims["id"]).first()
 
         qry_correction_exam = CorrectionsExam.query.filter_by(status=True).filter_by(question_quiz_id=args["question_quiz_id"]).filter_by(history_exam_id=qry_history_exam.id).all()
@@ -63,42 +63,42 @@ class CorrectionsExamResource(Resource):
         parser.add_argument("answer_quiz_id", location="json", default=None)
         args = parser.parse_args()
 
-        #check input history_exam_id in database there or not
+        # Check input history_exam_id in database there or not
         qry_history_exam = HistoriesExam.query.filter_by(id=args["history_exam_id"]).filter_by(status=True).first()
         if qry_history_exam is None:
             return {"status": "Input history exam isn't in database"}, 403
 
-        #check mentee from token match with mentee from history_exam
+        # Check mentee from token match with mentee from history_exam
         verify_jwt_in_request
         claims = get_jwt_claims()
 
         if claims["id"] != qry_history_exam.mentee_id:
             return {"status": "mentee in token and history_exam isn't match"}, 403
         
-        #check input question is in database or not
+        # Check input question is in database or not
         qry_question_exam = QuestionsQuiz.query.filter_by(id=args["question_quiz_id"]).filter_by(status=True).first()
         if qry_history_exam is None:
             return {"status": "input question isn't in database"}, 403
 
-        #check input answer isn't at database and match with question
+        # Check input answer isn't at database and match with question
         if args["answer_quiz_id"] is not None:
-            #check input answer isn't at database
+            # Check input answer isn't at database
             qry_choice_exam = ChoicesQuiz.query.filter_by(id=args["answer_quiz_id"]).filter_by(status=True).first()
             if qry_choice_exam is None:
                 return {"status": "input answer isn't in database"}, 403
             
-            #check answer match with question or not ?
+            # Check answer match with question or not ?
             if int(qry_choice_exam.question_id) != int(args["question_quiz_id"]):
                 return {"status": "input answer isn't in question"}, 403
 
-        #check history_exam match with question
+        # Check history_exam match with question
         history_exam = HistoriesExam.query.filter_by(status=True).filter_by(id=args["history_exam_id"]).first()
         quiz = Quizs.query.filter_by(status=True).filter_by(exam_id=history_exam.exam_id).first()
         question = QuestionsQuiz.query.filter_by(status=True).filter_by(id=args["question_quiz_id"]).first()
         if quiz.id != question.quiz_id:
             return {"status": "input question isn't match with quiz on history exam"}, 403
 
-        #check input answer in one question is already in database or not
+        # Check input answer in one question is already in database or not
         correction_exam = CorrectionsExam.query.filter_by(history_exam_id=args["history_exam_id"]).filter_by(question_quiz_id=args["question_quiz_id"]).filter_by(status=True).first()
         qry_choice_exam = ChoicesQuiz.query.filter_by(id=args["answer_quiz_id"]).filter_by(status=True).first()
         
@@ -136,25 +136,25 @@ class CorrectionsExamResource(Resource):
 
             db.session.commit()
 
-        #Calculation Score for Quiz
-        #determine sum of question in quiz
+        # Calculation Score for Quiz
+        # Determine sum of question in quiz
         qry_exam = Exams.query.filter_by(id=qry_history_exam.exam_id).filter_by(status=True).first()
         qry_quiz = Quizs.query.filter_by(exam_id=qry_exam.id).filter_by(status=True).first()
         qry_question = QuestionsQuiz.query.filter_by(quiz_id=qry_quiz.id).filter_by(status=True).all()
     
         sum_question = len(qry_question)
         
-        #determine answer true
+        # Determine answer true
         sum_true = 0
         qry_correction_exam = CorrectionsExam.query.filter_by(status=True).filter_by(history_exam_id=args["history_exam_id"]).all()
         for answer in qry_correction_exam:
             if answer.is_correct == True:
                 sum_true += 1
 
-        #calculate score
+        # Calculate score
         score = round(sum_true * 100 / sum_question)
         
-        #input score in history altatest
+        # Input score in history altatest
         qry_history_exam.score = score
         db.session.commit()
 
@@ -171,7 +171,7 @@ class CorrectionsExamResource(Resource):
 
         return correction_exam, 200
 
-    #Endpoint delete Correction Quiz by Id
+    # Endpoint delete Correction Quiz by Id
     @mentee_required
     def delete(self, id):
         qry_correction_exam = CorrectionsExam.query.get(id)
@@ -186,11 +186,11 @@ class CorrectionsExamResource(Resource):
 
 
 class CorrectionsExamSubmit(Resource):
-    # endpoint for solve CORS
+    # Endpoint for solve CORS
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to submit quiz question
+    # Endpoint to submit quiz question
     @mentee_required
     def post(self):
         parser = reqparse.RequestParser()
@@ -206,25 +206,25 @@ class CorrectionsExamSubmit(Resource):
 
         db.session.commit()
 
-        #get mentee_id by token
+        # Get mentee_id by token
         verify_jwt_in_request()
         claims = get_jwt_claims()
 
-        #get history subject
+        # Get history subject
         exam_id = qry_history_exam.exam_id
 
         qry_exam = Exams.query.get(exam_id)
 
         qry_history_subject = HistoriesSubject.query.filter_by(status=True).filter_by(subject_id=qry_exam.subject_id).filter_by(mentee_id=claims["id"]).first()
 
-        #get sum history_exam of mentee
+        # Get sum history_exam of mentee
         qry_history_exam_of_mentee = HistoriesExam.query.filter_by(status=True).filter_by(exam_id=exam_id).filter_by(mentee_id=claims["id"]).all()
         sum_history_exam_of_mentee = len(qry_history_exam_of_mentee)
 
         if qry_history_exam.score == None:
             qry_history_exam.score = 0
 
-        #fill result of exam to history_subject
+        # Fill result of exam to history_subject
         if qry_history_exam.score >= 80:
             qry_history_subject.score = qry_history_exam.score
             qry_history_subject.time_of_exam = sum_history_exam_of_mentee
@@ -240,14 +240,14 @@ class CorrectionsExamSubmit(Resource):
         
         # Make all modul and subject close when time of exam > 3
         if sum_history_exam_of_mentee >= 3 and qry_history_exam.score < 80:
-            #delete all history_exam_of_mentee
+            # Delete all history_exam_of_mentee
             history_exam_of_mentee = HistoriesExam.query.filter_by(mentee_id=claims["id"]).all()
             for history_exam in history_exam_of_mentee:
                 db.session.delete(history_exam)
                 db.session.commit()
 
             for index_phase, history_phase in enumerate(qry_history_phase):
-                #make all phase, is_complete and lock_key = False
+                # Make all phase, is_complete and lock_key = False
                 if index_phase == 0:
                     history_phase.is_complete = False
                     history_phase.lock_key = True
@@ -264,7 +264,7 @@ class CorrectionsExamSubmit(Resource):
                         histories_module.append(history_module)
                 
                 for index_module, history_module in enumerate(histories_module):
-                    #make all modul, is_complete and lock_key = False
+                    # Make all modul, is_complete and lock_key = False
                     if index_module == 0 and index_phase == 0:
                         history_module.is_complete = False
                         history_module.lock_key = True
@@ -281,7 +281,7 @@ class CorrectionsExamSubmit(Resource):
                             histories_subject.append(history_subject)
                     
                     for index_subject, history_subject in enumerate(histories_subject):
-                        #make all subject, is_complete and lock_key = False
+                        # Make all subject, is_complete and lock_key = False
                         if index_subject == 0 and index_module == 0 and index_phase == 0:
                             history_subject.is_complete = False
                             history_subject.lock_key = True
@@ -301,7 +301,7 @@ class CorrectionsExamSubmit(Resource):
             respond = {"status" : "repeat_subject", "score": qry_history_exam.score}
 
         elif qry_history_exam.score > 80:
-            #initial respond
+            # Initial respond
             respond_subject = ""
             respond_modul = ""
             respond_phase = ""
@@ -315,7 +315,7 @@ class CorrectionsExamSubmit(Resource):
                     if module.phase_id == phase:
                         histories_module.append(history_module)
                 
-                # for index_module, history_module in enumerate(qry_history_module):
+                # For index_module, history_module in enumerate(qry_history_module):
                 for index_module, history_module in enumerate(histories_module):
                     module = history_module.module_id
                     qry_history_subject = HistoriesSubject.query.filter_by(status=True).filter_by(mentee_id=claims["id"]).all()
@@ -325,21 +325,21 @@ class CorrectionsExamSubmit(Resource):
                         if subject.module_id == module:
                             histories_subject.append(history_subject)
                     
-                    # for index_subject, history_subject in enumerate(qry_history_subject):
+                    # For index_subject, history_subject in enumerate(qry_history_subject):
                     for index_subject, history_subject in enumerate(histories_subject):
-                        # make lock_key true when is_complete of subject_id in the before is True
+                        # Make lock_key true when is_complete of subject_id in the before is True
                         if history_subject.is_complete == True and index_subject != (len(qry_history_subject)-1):
                             qry_history_subject[index_subject+1].lock_key = True
                             respond_subject = {"status" : "subject", "score": qry_history_exam.score}
 
-                    # change lock_key in modul
+                    # Change lock_key in modul
                     if len(histories_subject) != 0:
                         modul_last_subject = histories_subject[-1]
                         if modul_last_subject.is_complete == True:
                             qry_history_module[index_module].is_complete = True
-                            # input score in modul
+                            # Input score in modul
                             sum_subject = len(histories_subject)
-                            # calculate score
+                            # Calculate score
                             score_temporary = 0
                             for subject in histories_subject:
                                 score_temporary += subject.score
@@ -348,13 +348,13 @@ class CorrectionsExamSubmit(Resource):
 
                             qry_history_module[index_module].score = score
 
-                            # input lock_key in next modul
+                            # Input lock_key in next modul
                             if index_module != (len(qry_history_module)-1):
                                 qry_history_module[index_module+1].lock_key = True
                             
                             respond_modul = {"status" : "module", "score": score}
 
-                # change lock key in phase
+                # Change lock key in phase
                 if len(histories_module) != 0:
                     phase_last_modul = histories_module[-1]
                     if phase_last_modul.is_complete == True:
@@ -362,9 +362,9 @@ class CorrectionsExamSubmit(Resource):
                         name_mentee = str(claims["full_name"]).replace(" ", "-")
                         qry_history_phase[index_phase].certificate = "alta/0" + str(index_phase+1) + "/" + str(date_number) + "/" + name_mentee
                         qry_history_phase[index_phase].date_certificate = datetime.now()
-                        # input score in phase
+                        # Input score in phase
                         sum_module = len(histories_module)
-                        # calculate score
+                        # Calculate score
                         score_temporary = 0
                         for module in histories_module:
                             score_temporary += module.score
@@ -373,7 +373,7 @@ class CorrectionsExamSubmit(Resource):
 
                         qry_history_phase[index_phase].score = score
 
-                        # input lock_key in next phase
+                        # Input lock_key in next phase
                         if index_phase != (len(qry_history_phase)-1):
                             qry_history_phase[index_phase+1].lock_key = True
 

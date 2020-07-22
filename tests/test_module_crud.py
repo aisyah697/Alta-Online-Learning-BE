@@ -157,17 +157,17 @@ class TestModuleCrud():
         res_json = json.loads(res.data)
         assert res.status_code == 404
 
-    def test_module_delete(self, client, init_database):
-        token = create_token_admin()
-        res = client.delete('/module/1', headers={'Authorization': 'Bearer ' + token}, content_type='application/json')
-        res_json=json.loads(res.data)
-        assert res.status_code==200
+    # def test_module_delete(self, client, init_database):
+    #     token = create_token_admin()
+    #     res = client.delete('/module/1', headers={'Authorization': 'Bearer ' + token}, content_type='application/json')
+    #     res_json=json.loads(res.data)
+    #     assert res.status_code==200
 
-    def test_module_delete_admin_not_super(self, client, init_database):
-        token = create_token_admin_business()
-        res = client.delete('/module/1', headers={'Authorization': 'Bearer ' + token}, content_type='application/json')
-        res_json=json.loads(res.data)
-        assert res.status_code==404
+    # def test_module_delete_admin_not_super(self, client, init_database):
+    #     token = create_token_admin_business()
+    #     res = client.delete('/module/1', headers={'Authorization': 'Bearer ' + token}, content_type='application/json')
+    #     res_json=json.loads(res.data)
+    #     assert res.status_code==404
 
     def test_module_get_all_status_true_adminid_desc(self, client, init_database):
         token = create_token_admin()

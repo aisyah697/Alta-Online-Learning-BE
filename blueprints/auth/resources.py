@@ -20,7 +20,7 @@ bp_auth = Blueprint("auth", __name__)
 api = Api(bp_auth)
 
 
-#Login for Admin
+# Login for Admin
 class AuthAdmin(Resource):
     def option(self, id=None):
         return {"status": "ok"}, 200
@@ -33,14 +33,14 @@ class AuthAdmin(Resource):
 
         qry_admin = Admins.query.filter_by(username=args["username"]).first()
 
-        #Check There admin in table or not ?
+        # Check There admin in table or not ?
         if qry_admin and qry_admin.status == True:
             username_salt = qry_admin.salt
 
             encoded = ("%s%s" % (args["password"], username_salt)).encode("utf-8")
             hash_pass = hashlib.sha512(encoded).hexdigest()
 
-            #Check password correct or not
+            # Check password correct or not
             if hash_pass == qry_admin.password:
                 obj_username = marshal(qry_admin, Admins.response_fields)
                 jwt_username = marshal(qry_admin, Admins.jwt_claims_fields)
@@ -58,7 +58,7 @@ class AuthAdmin(Resource):
             return {"status": "username not registered"}, 404
 
 
-#Login for Mentee
+# Login for Mentee
 class AuthMentee(Resource):
     def option(self, id=None):
         return {"status": "ok"}, 200
@@ -71,14 +71,14 @@ class AuthMentee(Resource):
 
         qry_mentee = Mentees.query.filter_by(username=args["username"]).first()
 
-        #Check There mentee in table or not ?
+        # Check There mentee in table or not ?
         if qry_mentee and qry_mentee.status == True:
             username_salt = qry_mentee.salt
 
             encoded = ("%s%s" % (args["password"], username_salt)).encode("utf-8")
             hash_pass = hashlib.sha512(encoded).hexdigest()
 
-            #Check password correct or not
+            # Check password correct or not
             if hash_pass == qry_mentee.password:
                 obj_username = marshal(qry_mentee, Mentees.response_fields)
                 jwt_username = marshal(qry_mentee, Mentees.jwt_claims_fields)

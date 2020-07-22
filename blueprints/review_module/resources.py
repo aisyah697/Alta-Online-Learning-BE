@@ -14,11 +14,11 @@ api = Api(bp_review_module)
 
 
 class ReviewsModuleResource(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint for search review module by id
+    # Endpoint for search review module by id
     def get(self, id=None):
         qry_review_module = ReviewsModule.query.filter_by(status=True).filter_by(id=id).first()
 
@@ -27,7 +27,7 @@ class ReviewsModuleResource(Resource):
         
         return {"status": "Id Review Module not found"}, 404
 
-    #endpoint for post review module
+    # Endpoint for post review module
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument("mentee_id", location="json", required=True)
@@ -37,7 +37,7 @@ class ReviewsModuleResource(Resource):
         parser.add_argument("status", location="json", default=True, type=bool)
         args = parser.parse_args()
 
-        #check there no review given from 1 mentee for 1 module, because 1 mentee just can give review for 1 module
+        # Check there no review given from 1 mentee for 1 module, because 1 mentee just can give review for 1 module
         qry_review_module = ReviewsModule.query.filter_by(mentee_id=args["mentee_id"]).filter_by(module_id=args["module_id"]).all()
         if qry_review_module:
             return {"status": "This mentee already give review for the module"}, 404
@@ -55,26 +55,26 @@ class ReviewsModuleResource(Resource):
 
         return marshal(result, ReviewsModule.response_fields), 200
 
-    #endpoint for soft delete
+    # Endpoint for soft delete
     def put(self, id):
         #check id in querry or not
         qry_review_module = ReviewsModule.query.get(id)
         if qry_review_module is None:
             return {'status': 'Review Module is NOT_FOUND'}, 404
 
-        #input update status 
+        # Input update status 
         parser = reqparse.RequestParser()
         parser.add_argument("status", location="json", type=bool)
         args = parser.parse_args()
         
-        #change status for soft delete
+        # Change status for soft delete
         qry_review_module.status = args["status"]
 
         db.session.commit()
 
         return marshal(qry_review_module, ReviewsModule.response_fields), 200
 
-    #endpoint for update field
+    # Endpoint for update field
     def patch(self, id):
         qry_review_module = ReviewsModule.query.filter_by(status=True).filter_by(id=id).first()
         if qry_review_module is None:
@@ -103,7 +103,7 @@ class ReviewsModuleResource(Resource):
 
         return marshal(qry_review_module, ReviewsModule.response_fields), 200
 
-    #endpoint for delete review module by id
+    # Endpoint for delete review module by id
     def delete(self, id):
         qry_review_module = ReviewsModule.query.get(id)
         
@@ -117,11 +117,11 @@ class ReviewsModuleResource(Resource):
 
 
 class ReviewsModuleAll(Resource):
-    #for solve cors
+    # For solve cors
     def option(self, id=None):
         return {"status": "ok"}, 200
 
-    #endpoint to get all and sort by modul_id & score
+    # Endpoint to get all and sort by modul_id & score
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)
@@ -156,7 +156,7 @@ class ReviewsModuleAll(Resource):
 
 
 class ReviewsModuleAllStatus(Resource):
-    #endpoint to get all status of review module
+    # Endpoint to get all status of review module
     def get(self):
         qry_review_module = ReviewsModule.query
 

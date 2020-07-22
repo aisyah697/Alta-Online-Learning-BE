@@ -161,7 +161,7 @@ class TestSubjecteCrud():
         res = client.get('/subject',
                         headers={'Authorization': 'Bearer ' + token},
                         query_string={'orderby':'name', 'sort': 'desc'},
-                        content_type = 'multipart/form-data')
+                        content_type = 'application/json')
         res_json = json.loads(res.data)
         assert res.status_code == 200
 
@@ -170,7 +170,7 @@ class TestSubjecteCrud():
         res = client.get('/subject',
                         headers={'Authorization': 'Bearer ' + token},
                         query_string={'orderby':'name', 'sort': 'asc'},
-                        content_type = 'multipart/form-data')
+                        content_type = 'application/json')
         res_json = json.loads(res.data)
         assert res.status_code == 200
 
@@ -179,7 +179,7 @@ class TestSubjecteCrud():
         res = client.get('/subject',
                         headers={'Authorization': 'Bearer ' + token},
                         query_string={'orderby':'module_id', 'sort': 'asc'},
-                        content_type = 'multipart/form-data')
+                        content_type = 'application/json')
         res_json = json.loads(res.data)
         assert res.status_code == 200
 
@@ -188,7 +188,7 @@ class TestSubjecteCrud():
         res = client.get('/subject',
                         headers={'Authorization': 'Bearer ' + token},
                         query_string={'orderby':'module_id', 'sort': 'desc'},
-                        content_type = 'multipart/form-data')
+                        content_type = 'application/json')
         res_json = json.loads(res.data)
         assert res.status_code == 200
 
